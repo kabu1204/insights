@@ -6,7 +6,7 @@
 *** Generic type
 <<cpp_src>>
 #+begin_src cpp
-  using i32 = uint32_t;
+  using i32 = int32_t;
   using f64 = double;
   struct Value{
       value_t type;
