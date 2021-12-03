@@ -1,4 +1,5 @@
 #+include: ../back.org
+#+TITLE: Enum of Rust used in Lisp interpreter
 * Rust的枚举类型和模式匹配在解释器泛型中的运用
 ** Problems
 在实现解释器时（无论是JSON还是Lisp等），一个必须要考虑的问题是多种类型的如何处理、以及嵌套子表达式应该如何表示。

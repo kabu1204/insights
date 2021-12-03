@@ -1,0 +1,22 @@
+#+include: back.org
+#+TITLE: Schedules
+* Here is a list of my want-todo
+** Rust
+*** JACKING IN Better Lisp interpretre
+- [X] Mininal impl(same as ILisp)
+- [ ] quote/setq/lambda
+- [ ] complex types
+*** TODO LC-3 Arch Virtual Machine
+*** TODO Chip-8 Emulator
+** C++
+*** JACKING IN Joblib(async/await)
+- [X] Stackless & Stackful coroutine
+- [ ] Multi-thread scheduling
+- [ ] asyncio
+*** DONE Mininal Lisp interpreter
+- State "DONE"       from "DONE"       [2021-12-04 Sat 02:03] \\
+  Git repo: [[https://github.com/kabu1204/ILisp][ILisp]]
+
+  Memo: [[https://mp.weixin.qq.com/s/lM-R7T3fzYL5OvBhK2Et8w][A C++ implementation of Lisp interpreter]]
+** Lisp
+*** TODO Coroutine in Scheme/CL

@@ -3,10 +3,10 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-12-03 Fri 21:20 -->
+<!-- 2021-12-04 Sat 02:19 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>&lrm;</title>
+<title>Enum of Rust used in Lisp interpreter</title>
 <meta name="generator" content="Org mode" />
 <meta name="author" content="yuchengye" />
 <style type="text/css">
@@ -218,16 +218,17 @@
 </head>
 <body>
 <div id="content">
+<h1 class="title">Enum of Rust used in Lisp interpreter</h1>
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orge7d26b7">1. Rust的枚举类型和模式匹配在解释器泛型中的运用</a>
+<li><a href="#org0f1fc3b">1. Rust的枚举类型和模式匹配在解释器泛型中的运用</a>
 <ul>
-<li><a href="#org7058c6f">1.1. Problems</a>
+<li><a href="#orged4e2e7">1.1. Problems</a>
 <ul>
-<li><a href="#orgffd33ed">1.1.1. Generic type</a></li>
-<li><a href="#org543b9c6">1.1.2. Nested sub-expression</a></li>
+<li><a href="#orgf6dee32">1.1.1. Generic type</a></li>
+<li><a href="#org2bd8ea8">1.1.2. Nested sub-expression</a></li>
 </ul>
 </li>
 </ul>
@@ -238,23 +239,23 @@
 <p>
 <a href="../index.html">Back to index</a>
 </p>
-<div id="outline-container-orge7d26b7" class="outline-2">
-<h2 id="orge7d26b7"><span class="section-number-2">1</span> Rust的枚举类型和模式匹配在解释器泛型中的运用</h2>
+<div id="outline-container-org0f1fc3b" class="outline-2">
+<h2 id="org0f1fc3b"><span class="section-number-2">1</span> Rust的枚举类型和模式匹配在解释器泛型中的运用</h2>
 <div class="outline-text-2" id="text-1">
 </div>
-<div id="outline-container-org7058c6f" class="outline-3">
-<h3 id="org7058c6f"><span class="section-number-3">1.1</span> Problems</h3>
+<div id="outline-container-orged4e2e7" class="outline-3">
+<h3 id="orged4e2e7"><span class="section-number-3">1.1</span> Problems</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 在实现解释器时（无论是JSON还是Lisp等），一个必须要考虑的问题是多种类型的如何处理、以及嵌套子表达式应该如何表示。
 下面谈一谈我在用C++和Rust处理这两个问题时的感慨
 </p>
 </div>
-<div id="outline-container-orgffd33ed" class="outline-4">
-<h4 id="orgffd33ed"><span class="section-number-4">1.1.1</span> Generic type</h4>
+<div id="outline-container-orgf6dee32" class="outline-4">
+<h4 id="orgf6dee32"><span class="section-number-4">1.1.1</span> Generic type</h4>
 <div class="outline-text-4" id="text-1-1-1">
 <p>
-<a id="org04f6135"></a>
+<a id="orga405bbf"></a>
 </p>
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #0000cd;">using</span> <span style="color: #228b22;">i32</span> = int32_t;
@@ -283,7 +284,7 @@ assert(a.get&lt;<span style="color: #228b22;">f64</span>&gt;()==3.14);
 <p>
 以上是我在<a href="https://github.com/kabu1204/ILisp">ILisp</a>中的实现：使用 <b><b>type</b></b> 来记录所存储值的类型；使用 <b><b>union</b></b> 存储数据来使用尽量少的空间。这种方式是权衡后的选择。在取值的时候虚要根据type判断get&lt;&gt;()的类型。而且虽然在C++11之后，union可以存储非POD类型的数据了，但是对std::string的支持依然不是很好。导致我只能存储i32和f64两种简单的类型。
 相比之下，Rust的枚举类型在应对这种场景时显得更加得心应手：
-<a id="org7af9f09"></a>
+<a id="org01c1b0c"></a>
 </p>
 <div class="org-src-container">
 <pre class="src src-rust"><span style="color: #b35caf;">#[derive(Debug, Clone)]</span>
@@ -328,11 +329,11 @@ assert(a.get&lt;<span style="color: #228b22;">f64</span>&gt;()==3.14);
 </ol>
 </div>
 </div>
-<div id="outline-container-org543b9c6" class="outline-4">
-<h4 id="org543b9c6"><span class="section-number-4">1.1.2</span> Nested sub-expression</h4>
+<div id="outline-container-org2bd8ea8" class="outline-4">
+<h4 id="org2bd8ea8"><span class="section-number-4">1.1.2</span> Nested sub-expression</h4>
 <div class="outline-text-4" id="text-1-1-2">
 <p>
-对比上面的代码(<a href="#org04f6135">cpp</a> <a href="#org7af9f09">rust</a>)：
+对比上面的代码(<a href="#orga405bbf">cpp</a> <a href="#org01c1b0c">rust</a>)：
 </p>
 <ol class="org-ol">
 <li>在c++实现中，我没有将类似vector&lt;Value&gt;的结构放在结构体Value的定义中，因为我觉得这使得Value的体积过于膨胀了，一个值类型应该是 <b><b>简洁</b></b> 。
@@ -346,7 +347,7 @@ assert(a.get&lt;<span style="color: #228b22;">f64</span>&gt;()==3.14);
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: yuchengye</p>
-<p class="date">Created: 2021-12-03 Fri 21:20</p>
+<p class="date">Created: 2021-12-04 Sat 02:19</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
