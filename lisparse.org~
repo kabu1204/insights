@@ -1,0 +1,73 @@
+* Lisp
+** Problems
+在实现解释器时（无论是JSON还是Lisp等），一个必须要考虑的问题是多种类型的如何处理、以及嵌套子表达式应该如何表示。
+下面谈一谈我在用C++和Rust处理这两个问题时的感慨
+*** Generic type
+<<cpp_src>>
+#+begin_src cpp
+  using i32 = uint32_t;
+  using f64 = double;
+  struct Value{
+      value_t type;
+      union{i32 Integer; f64 Fp;} data;
+      template<class T>
+      T get(){
+          if(type==Int) return data.Integer;
+          return data.Fp;
+      }
+      Value(f64 _data):type(Double){data.Fp=_data;}
+      Value(i32 _data):type(Int){data.Integer=_data;}
+      Value():type(Int){data.Integer=0;}
+  };
+  // store
+  auto a = Value(10);
+  auto b = Value(3.14);
+
+  // get
+  assert(a.get<i32>()==10);
+  assert(a.get<f64>()==3.14);
+#+end_src
+以上是我在[[https://github.com/kabu1204/ILisp][ILisp]]中的实现：使用 **type** 来记录所存储值的类型；使用 **union** 存储数据来使用尽量少的空间。这种方式是权衡后的选择。在取值的时候虚要根据type判断get<>()的类型。而且虽然在C++11之后，union可以存储非POD类型的数据了，但是对std::string的支持依然不是很好。导致我只能存储i32和f64两种简单的类型。
+相比之下，Rust的枚举类型在应对这种场景时显得更加得心应手：
+<<rust_src>>
+#+begin_src rust
+  #[derive(Debug, Clone)]
+  pub enum Atomic {
+      Number(i32),
+      Float(f64),
+      Symbol(String)  // TODO: refactor to &str
+  }
+
+  #[derive(Debug, Clone)]
+  pub enum LispType {
+      Atom(Atomic),
+      List(Vec<LispType>)
+  }
+
+  pub fn eval(expr: &LispType) {
+      match expr {
+          LispType::List(subexpr) => {
+              // do something
+              // calculate the value of sub-expression
+          },
+          LispType::Atom(Atomic::Symbol(symbol_name)) => {
+              // do something
+              // get value from Env
+          },
+          LispType::Atom(i32_or_f64) => {
+              match i32_or_f64 {
+                  Atomic::Number(num) => {/* do something */},
+                  Atomic::Float(fp) => {/* do something */}
+              }
+          }
+      }
+  }
+#+end_src
+以上是我在[[https://github.com/kabu1204/rlisp][rlisp]]的实现，可以看到，由于
+1. Rust的enum中每种枚举都可以和一个已有类型的值绑定
+2. 通过match表达式强大的模式匹配功能，可以 **优雅** （至少我觉得比较优雅） 地取出所绑定的值。
+*** Nested sub-expression
+对比上面的代码([[cpp_src]] [[rust_src]])：
+1. 在c++实现中，我没有将类似vector<Value>的结构放在结构体Value的定义中，因为我觉得这使得Value的体积过于膨胀了，一个值类型应该是 **简洁** 。
+   因此在c++实现中，我保留了["(", ")"]，将其作为边界字符，在eval()函数遇到"("时则进入下一层递归，在遇到")"计算并返回子表达式的值。
+2. 在rust实现中，由于enum足够简洁，我直接将子表达式（一个List，和rust的Vec<Lisptype>绑定）也作为一种枚举中的一种类型（实际上List本来就是Lisp的一种类型，这种设计更贴合Lisp）。类似地，eval()函数在match到LispType::List(Vec<LispType>)的时候进入下一层递归，离开作用域时计算并返回子表达式的值即可
