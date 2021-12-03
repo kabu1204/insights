@@ -3,12 +3,12 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-12-03 Fri 16:57 -->
+<!-- 2021-12-03 Fri 18:45 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
 <meta name="generator" content="Org mode" />
-<meta name="author" content="于承业" />
+<meta name="author" content="yuchengye" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center;
@@ -222,12 +222,12 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org23b5453">1. Rust的枚举类型和模式匹配在解释器泛型中的运用</a>
+<li><a href="#orgf362956">1. Rust的枚举类型和模式匹配在解释器泛型中的运用</a>
 <ul>
-<li><a href="#org078fa5e">1.1. Problems</a>
+<li><a href="#orgb712ff6">1.1. Problems</a>
 <ul>
-<li><a href="#org3fa45f3">1.1.1. Generic type</a></li>
-<li><a href="#orgd0df400">1.1.2. Nested sub-expression</a></li>
+<li><a href="#org532ba42">1.1.1. Generic type</a></li>
+<li><a href="#orgb3c960f">1.1.2. Nested sub-expression</a></li>
 </ul>
 </li>
 </ul>
@@ -235,23 +235,26 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org23b5453" class="outline-2">
-<h2 id="org23b5453"><span class="section-number-2">1</span> Rust的枚举类型和模式匹配在解释器泛型中的运用</h2>
+<p>
+<a href="../index.html">Back to index</a>
+</p>
+<div id="outline-container-orgf362956" class="outline-2">
+<h2 id="orgf362956"><span class="section-number-2">1</span> Rust的枚举类型和模式匹配在解释器泛型中的运用</h2>
 <div class="outline-text-2" id="text-1">
 </div>
-<div id="outline-container-org078fa5e" class="outline-3">
-<h3 id="org078fa5e"><span class="section-number-3">1.1</span> Problems</h3>
+<div id="outline-container-orgb712ff6" class="outline-3">
+<h3 id="orgb712ff6"><span class="section-number-3">1.1</span> Problems</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 在实现解释器时（无论是JSON还是Lisp等），一个必须要考虑的问题是多种类型的如何处理、以及嵌套子表达式应该如何表示。
 下面谈一谈我在用C++和Rust处理这两个问题时的感慨
 </p>
 </div>
-<div id="outline-container-org3fa45f3" class="outline-4">
-<h4 id="org3fa45f3"><span class="section-number-4">1.1.1</span> Generic type</h4>
+<div id="outline-container-org532ba42" class="outline-4">
+<h4 id="org532ba42"><span class="section-number-4">1.1.1</span> Generic type</h4>
 <div class="outline-text-4" id="text-1-1-1">
 <p>
-<a id="org2d0965f"></a>
+<a id="org0d2d67b"></a>
 </p>
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #0000cd;">using</span> <span style="color: #228b22;">i32</span> = uint32_t;
@@ -280,7 +283,7 @@ assert(a.get&lt;<span style="color: #228b22;">f64</span>&gt;()==3.14);
 <p>
 以上是我在<a href="https://github.com/kabu1204/ILisp">ILisp</a>中的实现：使用 <b><b>type</b></b> 来记录所存储值的类型；使用 <b><b>union</b></b> 存储数据来使用尽量少的空间。这种方式是权衡后的选择。在取值的时候虚要根据type判断get&lt;&gt;()的类型。而且虽然在C++11之后，union可以存储非POD类型的数据了，但是对std::string的支持依然不是很好。导致我只能存储i32和f64两种简单的类型。
 相比之下，Rust的枚举类型在应对这种场景时显得更加得心应手：
-<a id="org703789d"></a>
+<a id="orgd932dbc"></a>
 </p>
 <div class="org-src-container">
 <pre class="src src-rust"><span style="color: #b35caf;">#[derive(Debug, Clone)]</span>
@@ -325,11 +328,11 @@ assert(a.get&lt;<span style="color: #228b22;">f64</span>&gt;()==3.14);
 </ol>
 </div>
 </div>
-<div id="outline-container-orgd0df400" class="outline-4">
-<h4 id="orgd0df400"><span class="section-number-4">1.1.2</span> Nested sub-expression</h4>
+<div id="outline-container-orgb3c960f" class="outline-4">
+<h4 id="orgb3c960f"><span class="section-number-4">1.1.2</span> Nested sub-expression</h4>
 <div class="outline-text-4" id="text-1-1-2">
 <p>
-对比上面的代码(<a href="#org2d0965f">cpp</a> <a href="#org703789d">rust</a>)：
+对比上面的代码(<a href="#org0d2d67b">cpp</a> <a href="#orgd932dbc">rust</a>)：
 </p>
 <ol class="org-ol">
 <li>在c++实现中，我没有将类似vector&lt;Value&gt;的结构放在结构体Value的定义中，因为我觉得这使得Value的体积过于膨胀了，一个值类型应该是 <b><b>简洁</b></b> 。
@@ -342,8 +345,8 @@ assert(a.get&lt;<span style="color: #228b22;">f64</span>&gt;()==3.14);
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="author">Author: 于承业</p>
-<p class="date">Created: 2021-12-03 Fri 16:57</p>
+<p class="author">Author: yuchengye</p>
+<p class="date">Created: 2021-12-03 Fri 18:45</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

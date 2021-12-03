@@ -3,12 +3,12 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-12-03 Fri 16:55 -->
+<!-- 2021-12-03 Fri 18:41 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
 <meta name="generator" content="Org mode" />
-<meta name="author" content="于承业" />
+<meta name="author" content="yuchengye" />
 <style type="text/css">
  <!--/*--><![CDATA[/*><!--*/
   .title  { text-align: center;
@@ -222,128 +222,56 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org7afc112">1. Lisp</a>
+<li><a href="#orgc65957d">1. Humble Room on Mt. Takao</a>
 <ul>
-<li><a href="#org181d711">1.1. Problems</a>
-<ul>
-<li><a href="#org67a78e3">1.1.1. Generic type</a></li>
-<li><a href="#orgc1e21ba">1.1.2. Nested sub-expression</a></li>
-</ul>
-</li>
+<li><a href="#org2f9c3d0">1.1. About me</a></li>
+<li><a href="#org04f0d24">1.2. Index</a></li>
+<li><a href="#orgb3f58de">1.3. Contact me</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
-<div id="outline-container-org7afc112" class="outline-2">
-<h2 id="org7afc112"><span class="section-number-2">1</span> Lisp</h2>
+<div id="outline-container-orgc65957d" class="outline-2">
+<h2 id="orgc65957d"><span class="section-number-2">1</span> Humble Room on Mt. Takao</h2>
 <div class="outline-text-2" id="text-1">
+<p>
+This github pages is a site to publish some of my ideas. There used to be a blog, unfortunately due to some trivials, it had been shutdown. I'll put on my new articles here and try to re-upload some of my articles written in the past. 
+</p>
 </div>
-<div id="outline-container-org181d711" class="outline-3">
-<h3 id="org181d711"><span class="section-number-3">1.1</span> Problems</h3>
+<div id="outline-container-org2f9c3d0" class="outline-3">
+<h3 id="org2f9c3d0"><span class="section-number-3">1.1</span> About me</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
-在实现解释器时（无论是JSON还是Lisp等），一个必须要考虑的问题是多种类型的如何处理、以及嵌套子表达式应该如何表示。
-下面谈一谈我在用C++和Rust处理这两个问题时的感慨
+I'm a SCUT undergraduate majored in CS.
+No publications currently.
+I'm working on a research of pedestrian detection &amp; domain adaptation, also interested in programming languages (C++/Rust/Lisp/&#x2026;) and computer architecture.
+I'm short of knowledge but insisting on learning. 
 </p>
 </div>
-<div id="outline-container-org67a78e3" class="outline-4">
-<h4 id="org67a78e3"><span class="section-number-4">1.1.1</span> Generic type</h4>
-<div class="outline-text-4" id="text-1-1-1">
-<p>
-<a id="org9b1ac81"></a>
-</p>
-<div class="org-src-container">
-<pre class="src src-cpp"><span style="color: #0000cd;">using</span> <span style="color: #228b22;">i32</span> = uint32_t;
-<span style="color: #0000cd;">using</span> <span style="color: #228b22;">f64</span> = <span style="color: #228b22;">double</span>;
-<span style="color: #0000cd;">struct</span> <span style="color: #228b22;">Value</span>{
-    <span style="color: #228b22;">value_t</span> <span style="color: #a0522d;">type</span>;
-    <span style="color: #0000cd;">union</span>{<span style="color: #228b22;">i32</span> <span style="color: #a0522d;">Integer</span>; <span style="color: #228b22;">f64</span> <span style="color: #a0522d;">Fp</span>;} <span style="color: #a0522d;">data</span>;
-    <span style="color: #0000cd;">template</span>&lt;<span style="color: #0000cd;">class</span> <span style="color: #228b22;">T</span>&gt;
-    <span style="color: #228b22;">T</span> <span style="color: #ff0000;">get</span>(){
-        <span style="color: #0000cd;">if</span>(type==Int) <span style="color: #0000cd;">return</span> data.Integer;
-        <span style="color: #0000cd;">return</span> data.Fp;
-    }
-    <span style="color: #ff0000;">Value</span>(<span style="color: #228b22;">f64</span> <span style="color: #a0522d;">_data</span>):<span style="color: #ff0000;">type</span>(Double){data.Fp=_data;}
-    <span style="color: #ff0000;">Value</span>(<span style="color: #228b22;">i32</span> <span style="color: #a0522d;">_data</span>):<span style="color: #ff0000;">type</span>(Int){data.Integer=_data;}
-    <span style="color: #ff0000;">Value</span>():<span style="color: #ff0000;">type</span>(Int){data.Integer=0;}
-};
-<span style="color: #b22222;">// </span><span style="color: #b22222;">store</span>
-<span style="color: #0000cd;">auto</span> <span style="color: #a0522d;">a</span> = Value(10);
-<span style="color: #0000cd;">auto</span> <span style="color: #a0522d;">b</span> = Value(3.14);
-
-<span style="color: #b22222;">// </span><span style="color: #b22222;">get</span>
-assert(a.get&lt;<span style="color: #228b22;">i32</span>&gt;()==10);
-assert(a.get&lt;<span style="color: #228b22;">f64</span>&gt;()==3.14);
-</pre>
 </div>
-<p>
-以上是我在<a href="https://github.com/kabu1204/ILisp">ILisp</a>中的实现：使用 <b><b>type</b></b> 来记录所存储值的类型；使用 <b><b>union</b></b> 存储数据来使用尽量少的空间。这种方式是权衡后的选择。在取值的时候虚要根据type判断get&lt;&gt;()的类型。而且虽然在C++11之后，union可以存储非POD类型的数据了，但是对std::string的支持依然不是很好。导致我只能存储i32和f64两种简单的类型。
-相比之下，Rust的枚举类型在应对这种场景时显得更加得心应手：
-<a id="orgcd2fb1c"></a>
-</p>
-<div class="org-src-container">
-<pre class="src src-rust"><span style="color: #b35caf;">#[derive(Debug, Clone)]</span>
-<span style="color: #0000cd;">pub</span> <span style="color: #0000cd;">enum</span> <span style="color: #228b22;">Atomic</span> {
-    <span style="color: #228b22;">Number</span>(<span style="color: #228b22;">i32</span>),
-    <span style="color: #228b22;">Float</span>(<span style="color: #228b22;">f64</span>),
-    <span style="color: #228b22;">Symbol</span>(<span style="color: #228b22;">String</span>)  <span style="color: #b22222;">// </span><span style="color: #b22222;">TODO: refactor to &amp;str</span>
-}
-
-<span style="color: #b35caf;">#[derive(Debug, Clone)]</span>
-<span style="color: #0000cd;">pub</span> <span style="color: #0000cd;">enum</span> <span style="color: #228b22;">LispType</span> {
-    <span style="color: #228b22;">Atom</span>(<span style="color: #228b22;">Atomic</span>),
-    <span style="color: #228b22;">List</span>(<span style="color: #228b22;">Vec</span>&lt;<span style="color: #228b22;">LispType</span>&gt;)
-}
-
-<span style="color: #0000cd;">pub</span> <span style="color: #0000cd;">fn</span> <span style="color: #ff0000;">eval</span>(<span style="color: #a0522d;">expr</span>: &amp;<span style="color: #228b22;">LispType</span>) {
-    <span style="color: #0000cd;">match</span> expr {
-        <span style="color: #228b22;">LispType</span>::<span style="color: #228b22;">List</span>(subexpr) =&gt; {
-            <span style="color: #b22222;">// </span><span style="color: #b22222;">do something</span>
-            <span style="color: #b22222;">// </span><span style="color: #b22222;">calculate the value of sub-expression</span>
-        },
-        <span style="color: #228b22;">LispType</span>::<span style="color: #228b22;">Atom</span>(<span style="color: #228b22;">Atomic</span>::<span style="color: #228b22;">Symbol</span>(symbol_name)) =&gt; {
-            <span style="color: #b22222;">// </span><span style="color: #b22222;">do something</span>
-            <span style="color: #b22222;">// </span><span style="color: #b22222;">get value from Env</span>
-        },
-        <span style="color: #228b22;">LispType</span>::<span style="color: #228b22;">Atom</span>(i32_or_f64) =&gt; {
-            <span style="color: #0000cd;">match</span> i32_or_f64 {
-                <span style="color: #228b22;">Atomic</span>::<span style="color: #228b22;">Number</span>(num) =&gt; {<span style="color: #b22222;">/* </span><span style="color: #b22222;">do something */</span>},
-                <span style="color: #228b22;">Atomic</span>::<span style="color: #228b22;">Float</span>(fp) =&gt; {<span style="color: #b22222;">/* </span><span style="color: #b22222;">do something */</span>}
-            }
-        }
-    }
-}
-</pre>
-</div>
-<p>
-以上是我在<a href="https://github.com/kabu1204/rlisp">rlisp</a>的实现，可以看到，由于
-</p>
+<div id="outline-container-org04f0d24" class="outline-3">
+<h3 id="org04f0d24"><span class="section-number-3">1.2</span> Index</h3>
+<div class="outline-text-3" id="text-1-2">
 <ol class="org-ol">
-<li>Rust的enum中每种枚举都可以和一个已有类型的值绑定</li>
-<li>通过match表达式强大的模式匹配功能，可以 <b><b>优雅</b></b> （至少我觉得比较优雅） 地取出所绑定的值。</li>
+<li><a href="./lisparse/lisparse.html">Enum of Rust used in Lisp interpreter</a></li>
+<li>If you are working with Rust or Clojure, maybe you can check my emacs configuration: <a href="https://github.com/kabu1204/.emacs.d">kabu1204/.emacs.d</a></li>
 </ol>
 </div>
 </div>
-<div id="outline-container-orgc1e21ba" class="outline-4">
-<h4 id="orgc1e21ba"><span class="section-number-4">1.1.2</span> Nested sub-expression</h4>
-<div class="outline-text-4" id="text-1-1-2">
+<div id="outline-container-orgb3f58de" class="outline-3">
+<h3 id="orgb3f58de"><span class="section-number-3">1.3</span> Contact me</h3>
+<div class="outline-text-3" id="text-1-3">
 <p>
-对比上面的代码(<a href="#org9b1ac81">cpp</a> <a href="#orgcd2fb1c">rust</a>)：
+EMAIL: <a href="mailto:yuchengye.eric.cy@gmail.com">yuchengye.eric.cy@gmail.com</a>
 </p>
-<ol class="org-ol">
-<li>在c++实现中，我没有将类似vector&lt;Value&gt;的结构放在结构体Value的定义中，因为我觉得这使得Value的体积过于膨胀了，一个值类型应该是 <b><b>简洁</b></b> 。
-因此在c++实现中，我保留了["(", ")"]，将其作为边界字符，在eval()函数遇到"("时则进入下一层递归，在遇到")"计算并返回子表达式的值。</li>
-<li>在rust实现中，由于enum足够简洁，我直接将子表达式（一个List，和rust的Vec&lt;Lisptype&gt;绑定）也作为一种枚举中的一种类型（实际上List本来就是Lisp的一种类型，这种设计更贴合Lisp）。类似地，eval()函数在match到LispType::List(Vec&lt;LispType&gt;)的时候进入下一层递归，离开作用域时计算并返回子表达式的值即可</li>
-</ol>
-</div>
 </div>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="author">Author: 于承业</p>
-<p class="date">Created: 2021-12-03 Fri 16:55</p>
+<p class="author">Author: yuchengye</p>
+<p class="date">Created: 2021-12-03 Fri 18:41</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
