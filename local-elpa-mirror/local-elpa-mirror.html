@@ -3,10 +3,10 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-12-04 Sat 18:18 -->
+<!-- 2021-12-04 Sat 18:09 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Humble Room on Mt. Takao - Main Page</title>
+<title>Local elpa mirror</title>
 <meta name="generator" content="Org mode" />
 <meta name="author" content="yuchengye" />
 <style type="text/css">
@@ -218,71 +218,254 @@
 </head>
 <body>
 <div id="content">
-<h1 class="title">Humble Room on Mt. Takao - Main Page</h1>
+<h1 class="title">Local elpa mirror</h1>
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgc7a01c2">1. Humble Room on Mt. Takao</a>
+<li><a href="#orgc636eb4">1. Local elpa mirror</a>
 <ul>
-<li><a href="#org02d0326">1.1. About me</a></li>
-<li><a href="#orgfdad27b">1.2. Index</a></li>
-<li><a href="#orgede9452">1.3. Schedules</a></li>
-<li><a href="#orge5084b0">1.4. Contact me</a></li>
+<li><a href="#org3f1ffa2">1.1. Use rsync</a>
+<ul>
+<li><a href="#org07ec9bf">1.1.1. Install</a></li>
+<li><a href="#org34a5917">1.1.2. Usage</a></li>
+</ul>
+</li>
+<li><a href="#org07125d8">1.2. Thin</a></li>
+<li><a href="#org515b7dd">1.3. Configuration</a>
+<ul>
+<li><a href="#orgdbe987e">1.3.1. use natively</a></li>
+<li><a href="#orgbf55a1f">1.3.2. use as a local http server</a></li>
+<li><a href="#org59db653">1.3.3. Effect</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
-<div id="outline-container-orgc7a01c2" class="outline-2">
-<h2 id="orgc7a01c2"><span class="section-number-2">1</span> Humble Room on Mt. Takao</h2>
+<p>
+<a href="../index.html">Back to index</a>
+</p>
+
+<div id="outline-container-orgc636eb4" class="outline-2">
+<h2 id="orgc636eb4"><span class="section-number-2">1</span> Local elpa mirror</h2>
 <div class="outline-text-2" id="text-1">
 <p>
-This github pages is a site to publish some of my ideas. There used to be a blog, unfortunately due to some trivials, it had been shutdown. I'll put on my new articles here and try to re-upload some of my articles written in the past. 
+Compared with pip or deb repo, elpa is really a smaller one (~ 1GB). You can sync GNU-ELPA or MELPA archives down to the local to replace the package-archives in the <code>~/.emacs.d/init.el</code>
 </p>
 </div>
-<div id="outline-container-org02d0326" class="outline-3">
-<h3 id="org02d0326"><span class="section-number-3">1.1</span> About me</h3>
+<div id="outline-container-org3f1ffa2" class="outline-3">
+<h3 id="org3f1ffa2"><span class="section-number-3">1.1</span> Use rsync</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
-I'm a SCUT undergraduate majored in CS.
-No publications currently.
-I'm working on a research of pedestrian detection &amp; domain adaptation, also interested in programming languages (C++/Rust/Lisp/&#x2026;) and computer architecture.
-I'm short of knowledge but insisting on learning. 
+Rsync is a powerful command line tool to synchronize local files with files on the remote server (or local with local)
+</p>
+</div>
+<div id="outline-container-org07ec9bf" class="outline-4">
+<h4 id="org07ec9bf"><span class="section-number-4">1.1.1</span> Install</h4>
+<div class="outline-text-4" id="text-1-1-1">
+<p>
+On Debian/Ubuntu:
+</p>
+<div class="org-src-container">
+<pre class="src src-shell">sudo apt-get install rsync
+</pre>
+</div>
+
+<p>
+On Fedora/CentOS:
+</p>
+<div class="org-src-container">
+<pre class="src src-shell">yum install rsync
+</pre>
+</div>
+</div>
+</div>
+<div id="outline-container-org34a5917" class="outline-4">
+<h4 id="org34a5917"><span class="section-number-4">1.1.2</span> Usage</h4>
+<div class="outline-text-4" id="text-1-1-2">
+<p>
+There is rich functions with rsync, for this article, we only use:
+</p>
+<div class="org-src-container">
+<pre class="src src-shell">rsync -a &lt;rsync-server-addr&gt; &lt;mapping-directory&gt;
+</pre>
+</div>
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Archives</th>
+<th scope="col" class="org-left">Rsync server</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">GNU ELPA</td>
+<td class="org-left">rsync://elpa.gnu.org/elpa/</td>
+</tr>
+
+<tr>
+<td class="org-left">MELPA</td>
+<td class="org-left">rsync://melpa.org/packages/</td>
+</tr>
+
+<tr>
+<td class="org-left">TUNA</td>
+<td class="org-left">rsync://mirrors.tuna.tsinghua.edu.cn/elpa/</td>
+</tr>
+</tbody>
+</table>
+
+
+<div id="orgffe3b20" class="figure">
+<p><img src="assets/0.png" alt="0.png" width="50%" />
+</p>
+</div>
+
+<p>
+The shell will be blocked and the synchronization has started, wait patiently until the sync finished. You can see in the router, rsync is downloading files from the server:
+</p>
+
+<div id="orgdd61cae" class="figure">
+<p><img src="assets/1.png" alt="1.png" width="50%" />
 </p>
 </div>
 </div>
-<div id="outline-container-orgfdad27b" class="outline-3">
-<h3 id="orgfdad27b"><span class="section-number-3">1.2</span> Index</h3>
+</div>
+</div>
+
+<div id="outline-container-org07125d8" class="outline-3">
+<h3 id="org07125d8"><span class="section-number-3">1.2</span> Thin</h3>
 <div class="outline-text-3" id="text-1-2">
-<ol class="org-ol">
-<li><a href="./lisparse/lisparse.html">Enum of Rust used in Lisp interpreter</a></li>
-<li>If you are working with Rust or Clojure, maybe you can check my emacs configuration: <a href="https://github.com/kabu1204/.emacs.d">kabu1204/.emacs.d</a></li>
-<li><a href="./local-elpa-mirror/local-elpa-mirror.html">Local ELPA mirror</a></li>
-</ol>
+<p>
+You may find the size of the mapping folder much bigger than 1GB:
+</p>
+
+<div id="org50f02a6" class="figure">
+<p><img src="assets/2.png" alt="2.png" width="50%" />
+</p>
+</div>
+
+<p>
+This is because rsync download this <code>.git</code> at the same time.
+</p>
+
+<p>
+You can do this to thin the folder:
+</p>
+<div class="org-src-container">
+<pre class="src src-shell"><span style="color: #b35caf;">cd</span> &lt;mapping-directory&gt;
+git gc --prune=now
+</pre>
+</div>
+
+<p>
+after thinning:
+</p>
+
+<div id="orgea9a870" class="figure">
+<p><img src="assets/3.png" alt="3.png" width="50%" />
+</p>
+</div>
+
+<p>
+Or, you can simply delete <code>.git</code> or exclude <code>.git</code> folder when rsyncing:
+</p>
+<div class="org-src-container">
+<pre class="src src-shell">rsync -a --exclude=<span style="color: #8b008b;">".git"</span> &lt;rsync-server-addr&gt; &lt;mapping-directory&gt;
+</pre>
 </div>
 </div>
-<div id="outline-container-orgede9452" class="outline-3">
-<h3 id="orgede9452"><span class="section-number-3">1.3</span> Schedules</h3>
+</div>
+
+<div id="outline-container-org515b7dd" class="outline-3">
+<h3 id="org515b7dd"><span class="section-number-3">1.3</span> Configuration</h3>
 <div class="outline-text-3" id="text-1-3">
+</div>
+<div id="outline-container-orgdbe987e" class="outline-4">
+<h4 id="orgdbe987e"><span class="section-number-4">1.3.1</span> use natively</h4>
+<div class="outline-text-4" id="text-1-3-1">
 <p>
-My Schedules:<a href="./agenda.html">agenda</a>
+If you use Emacs on the same machine as the &lt;mapping-directory&gt; is stored, you can setup like this:
 </p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #0000cd;">setq</span> package-archives '((<span style="color: #8b008b;">"gnu"</span>   . <span style="color: #8b008b;">"&lt;mapping-directory&gt;/gnu/"</span>)
+                         (<span style="color: #8b008b;">"org"</span>   . <span style="color: #8b008b;">"&lt;mapping-directory&gt;/org/"</span>)
+                         (<span style="color: #8b008b;">"melpa"</span> . <span style="color: #8b008b;">"&lt;mapping-directory&gt;/melpa/"</span>)))
+</pre>
 </div>
 </div>
-<div id="outline-container-orge5084b0" class="outline-3">
-<h3 id="orge5084b0"><span class="section-number-3">1.4</span> Contact me</h3>
-<div class="outline-text-3" id="text-1-4">
+</div>
+
+<div id="outline-container-orgbf55a1f" class="outline-4">
+<h4 id="orgbf55a1f"><span class="section-number-4">1.3.2</span> use as a local http server</h4>
+<div class="outline-text-4" id="text-1-3-2">
 <p>
-EMAIL: <a href="mailto:yuchengye.eric.cy@gmail.com">yuchengye.eric.cy@gmail.com</a>
+For example, you have more than one devices using Emacs in the LAN, configure the storing device to be a server.
 </p>
+
+<p>
+Here I use Nginx to setup my Ras-Pi to be a server:
+</p>
+
+<p>
+<code>/etc/nginx/sites-enabled/elpa.conf</code>
+</p>
+<div class="org-src-container">
+<pre class="src src-conf"><span style="color: #228b22;">server</span> {
+    listen                  80;
+    listen                  [::]:80;
+    server_name             _;
+    root                    /mnt/samsung/mirror/elpa;  <span style="color: #b22222;"># </span><span style="color: #b22222;">replace with you &lt;mapping-directory&gt;</span>
+
+    <span style="color: #b22222;"># </span><span style="color: #b22222;">index.html fallback</span>
+    <span style="color: #228b22;">location /</span> {
+        try_files $uri $uri/ /index.html;
+    }
+}
+</pre>
+</div>
+
+<p>
+Check the LAN address of Ras-Pi (192.168.2.158 here), edit <code>~/.emacs.d/init.el</code> of every device that will use the local mirror:
+</p>
+<div class="org-src-container">
+<pre class="src src-emacs-lisp">(<span style="color: #0000cd;">setq</span> package-archives '((<span style="color: #8b008b;">"gnu"</span>   . <span style="color: #8b008b;">"http://192.168.2.158/gnu/"</span>)
+                         (<span style="color: #8b008b;">"org"</span>   . <span style="color: #8b008b;">"http://192.168.2.158/org/"</span>)
+                         (<span style="color: #8b008b;">"melpa"</span> . <span style="color: #8b008b;">"http://192.168.2.158/melpa/"</span>)))
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org59db653" class="outline-4">
+<h4 id="org59db653"><span class="section-number-4">1.3.3</span> Effect</h4>
+<div class="outline-text-4" id="text-1-3-3">
+
+<div id="org4d12733" class="figure">
+<p><img src="assets/4.png" alt="4.png" width="50%" />
+</p>
+</div>
+
+<p>
+You can write a shell that periodically rsync from server.
+</p>
+</div>
 </div>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: yuchengye</p>
-<p class="date">Created: 2021-12-04 Sat 18:18</p>
+<p class="date">Created: 2021-12-04 Sat 18:09</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

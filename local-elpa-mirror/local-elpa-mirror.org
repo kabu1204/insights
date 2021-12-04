@@ -1,0 +1,99 @@
+#+include: ../back.org
+#+TITLE: Local elpa mirror
+
+* Local elpa mirror
+Compared with pip or deb repo, elpa is really a smaller one (~ 1GB). You can sync GNU-ELPA or MELPA archives down to the local to replace the package-archives in the =~/.emacs.d/init.el=
+** Use rsync
+Rsync is a powerful command line tool to synchronize local files with files on the remote server (or local with local)
+*** Install
+On Debian/Ubuntu:
+#+begin_src shell
+  sudo apt-get install rsync
+#+end_src
+
+On Fedora/CentOS:
+#+begin_src shell
+  yum install rsync
+#+end_src
+*** Usage
+There is rich functions with rsync, for this article, we only use:
+#+begin_src shell
+  rsync -a <rsync-server-addr> <mapping-directory>
+#+end_src
+| Archives | Rsync server                               |
+|----------+--------------------------------------------|
+| GNU ELPA | rsync://elpa.gnu.org/elpa/                 |
+| MELPA    | rsync://melpa.org/packages/                |
+| TUNA     | rsync://mirrors.tuna.tsinghua.edu.cn/elpa/ |
+
+#+ATTR_HTML: :width 50%
+[[file:assets/0.png]]
+
+The shell will be blocked and the synchronization has started, wait patiently until the sync finished. You can see in the router, rsync is downloading files from the server:
+#+ATTR_HTML: :width 50%
+[[file:assets/1.png]]
+
+** Thin
+You may find the size of the mapping folder much bigger than 1GB:
+#+ATTR_HTML: :width 50%
+[[file:assets/2.png]]
+
+This is because rsync download this =.git= at the same time.
+
+You can do this to thin the folder:
+#+begin_src shell
+  cd <mapping-directory>
+  git gc --prune=now
+#+end_src
+
+after thinning:
+#+ATTR_HTML: :width 50%
+[[file:assets/3.png]]
+
+Or, you can simply delete =.git= or exclude =.git= folder when rsyncing:
+#+begin_src shell
+  rsync -a --exclude=".git" <rsync-server-addr> <mapping-directory>
+#+end_src
+
+** Configuration
+
+*** use natively
+If you use Emacs on the same machine as the <mapping-directory> is stored, you can setup like this:
+#+begin_src emacs-lisp
+  (setq package-archives '(("gnu"   . "<mapping-directory>/gnu/")
+                           ("org"   . "<mapping-directory>/org/")
+                           ("melpa" . "<mapping-directory>/melpa/")))
+#+end_src
+
+*** use as a local http server
+For example, you have more than one devices using Emacs in the LAN, configure the storing device to be a server.
+
+Here I use Nginx to setup my Ras-Pi to be a server:
+
+=/etc/nginx/sites-enabled/elpa.conf=
+#+begin_src conf
+  server {
+      listen                  80;
+      listen                  [::]:80;
+      server_name             _;
+      root                    /mnt/samsung/mirror/elpa;  # replace with you <mapping-directory>
+
+      # index.html fallback
+      location / {
+          try_files $uri $uri/ /index.html;
+      }
+  }
+#+end_src
+
+Check the LAN address of Ras-Pi (192.168.2.158 here), edit =~/.emacs.d/init.el= of every device that will use the local mirror:
+#+begin_src emacs-lisp
+  (setq package-archives '(("gnu"   . "http://192.168.2.158/gnu/")
+                           ("org"   . "http://192.168.2.158/org/")
+                           ("melpa" . "http://192.168.2.158/melpa/")))
+#+end_src
+
+*** Effect
+#+ATTR_HTML: :width 50%
+[[file:assets/4.png]]
+
+You can write a shell that periodically rsync from server.

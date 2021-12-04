@@ -9,6 +9,7 @@ I'm short of knowledge but insisting on learning.
 ** Index
 1. [[./lisparse/lisparse.html][Enum of Rust used in Lisp interpreter]]
 2. If you are working with Rust or Clojure, maybe you can check my emacs configuration: [[https://github.com/kabu1204/.emacs.d][kabu1204/.emacs.d]]
+3. [[./local-elpa-mirror/local-elpa-mirror.html][Local ELPA mirror]]
 ** Schedules
 My Schedules:[[./agenda.html][agenda]]
 ** Contact me
