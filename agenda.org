@@ -4,7 +4,7 @@
 ** Rust
 *** JACKING IN Better Lisp interpretre
 - [X] Mininal impl(same as ILisp)
-- [ ] quote/setq/lambda
+- [X] quote/setq/lambda
 - [ ] complex types
 *** TODO LC-3 Arch Virtual Machine
 *** TODO Chip-8 Emulator

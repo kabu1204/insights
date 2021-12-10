@@ -1,4 +1,7 @@
 #+TITLE: Humble Room on Mt. Takao - Main Page
+#+LATEX_COMPILER: xelatex
+#+LATEX_CLASS: elegantpaper
+#+OPTIONS: prop:t
 * Humble Room on Mt. Takao
 This github pages is a site to publish some of my ideas. There used to be a blog, unfortunately due to some trivials, it had been shutdown. I'll put on my new articles here and try to re-upload some of my articles written in the past. 
 ** About me
@@ -10,6 +13,7 @@ I'm short of knowledge but insisting on learning.
 1. [[./lisparse/lisparse.html][Enum of Rust used in Lisp interpreter]]
 2. If you are working with Rust or Clojure, maybe you can check my emacs configuration: [[https://github.com/kabu1204/.emacs.d][kabu1204/.emacs.d]]
 3. [[./local-elpa-mirror/local-elpa-mirror.html][Local ELPA mirror]]
+4. [[./rlisp/rlisp.html][a better Lisp interpreter in Rust]]
 ** Schedules
 My Schedules:[[./agenda.html][agenda]]
 ** Contact me

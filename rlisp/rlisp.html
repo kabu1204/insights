@@ -3,10 +3,10 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-12-10 Fri 19:11 -->
+<!-- 2021-12-10 Fri 19:13 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Schedules</title>
+<title>a better Lisp interpreter in Rust</title>
 <meta name="generator" content="Org mode" />
 <meta name="author" content="yuchengye" />
 <style type="text/css">
@@ -218,107 +218,212 @@
 </head>
 <body>
 <div id="content">
-<h1 class="title">Schedules</h1>
+<h1 class="title">a better Lisp interpreter in Rust</h1>
 <div id="table-of-contents">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgfc11d4d">1. Here is a list of my want-todo</a>
+<li><a href="#org377043d">1. rlisp</a>
 <ul>
-<li><a href="#org1366c5e">1.1. Rust</a>
-<ul>
-<li><a href="#org3d5e02e">1.1.1. <span class="todo JACKING_IN">JACKING IN</span> Better Lisp interpretre</a></li>
-<li><a href="#org171c401">1.1.2. <span class="todo TODO">TODO</span> LC-3 Arch Virtual Machine</a></li>
-<li><a href="#org595481a">1.1.3. <span class="todo TODO">TODO</span> Chip-8 Emulator</a></li>
-</ul>
-</li>
-<li><a href="#orgad2cd0f">1.2. C++</a>
-<ul>
-<li><a href="#orgf6f7774">1.2.1. <span class="todo JACKING_IN">JACKING IN</span> Joblib(async/await)</a></li>
-<li><a href="#org78297db">1.2.2. <span class="done DONE">DONE</span> Mininal Lisp interpreter</a></li>
-</ul>
-</li>
-<li><a href="#org4ba1731">1.3. Lisp</a>
-<ul>
-<li><a href="#org6b1f937">1.3.1. <span class="todo TODO">TODO</span> Coroutine in Scheme/CL</a></li>
-</ul>
-</li>
+<li><a href="#org47b2b28">1.1. Compared with ILisp</a></li>
+<li><a href="#org11b1d9c">1.2. Build &amp; Run</a></li>
+<li><a href="#orgbe8a318">1.3. Test</a></li>
+<li><a href="#org62012d7">1.4. Functions</a></li>
+<li><a href="#org85de377">1.5. Examples</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
 <p>
-<a href="./index.html">Back to index</a>
+<a href="../index.html">Back to index</a>
 </p>
-<div id="outline-container-orgfc11d4d" class="outline-2">
-<h2 id="orgfc11d4d"><span class="section-number-2">1</span> Here is a list of my want-todo</h2>
+<div id="outline-container-org377043d" class="outline-2">
+<h2 id="org377043d"><span class="section-number-2">1</span> rlisp</h2>
 <div class="outline-text-2" id="text-1">
-</div>
-<div id="outline-container-org1366c5e" class="outline-3">
-<h3 id="org1366c5e"><span class="section-number-3">1.1</span> Rust</h3>
-<div class="outline-text-3" id="text-1-1">
-</div>
-<div id="outline-container-org3d5e02e" class="outline-4">
-<h4 id="org3d5e02e"><span class="section-number-4">1.1.1</span> <span class="todo JACKING_IN">JACKING IN</span> Better Lisp interpretre</h4>
-<div class="outline-text-4" id="text-1-1-1">
-<ul class="org-ul">
-<li class="on"><code>[X]</code> Mininal impl(same as ILisp)</li>
-<li class="on"><code>[X]</code> quote/setq/lambda</li>
-<li class="off"><code>[&#xa0;]</code> complex types</li>
-</ul>
-</div>
-</div>
-<div id="outline-container-org171c401" class="outline-4">
-<h4 id="org171c401"><span class="section-number-4">1.1.2</span> <span class="todo TODO">TODO</span> LC-3 Arch Virtual Machine</h4>
-</div>
-<div id="outline-container-org595481a" class="outline-4">
-<h4 id="org595481a"><span class="section-number-4">1.1.3</span> <span class="todo TODO">TODO</span> Chip-8 Emulator</h4>
-</div>
-</div>
-<div id="outline-container-orgad2cd0f" class="outline-3">
-<h3 id="orgad2cd0f"><span class="section-number-3">1.2</span> C++</h3>
-<div class="outline-text-3" id="text-1-2">
-</div>
-<div id="outline-container-orgf6f7774" class="outline-4">
-<h4 id="orgf6f7774"><span class="section-number-4">1.2.1</span> <span class="todo JACKING_IN">JACKING IN</span> Joblib(async/await)</h4>
-<div class="outline-text-4" id="text-1-2-1">
-<ul class="org-ul">
-<li class="on"><code>[X]</code> Stackless &amp; Stackful coroutine</li>
-<li class="off"><code>[&#xa0;]</code> Multi-thread scheduling</li>
-<li class="off"><code>[&#xa0;]</code> asyncio</li>
-</ul>
-</div>
-</div>
-<div id="outline-container-org78297db" class="outline-4">
-<h4 id="org78297db"><span class="section-number-4">1.2.2</span> <span class="done DONE">DONE</span> Mininal Lisp interpreter</h4>
-<div class="outline-text-4" id="text-1-2-2">
-<ul class="org-ul">
-<li><p>
-State "DONE"       from "DONE"       <span class="timestamp-wrapper"><span class="timestamp">[2021-12-04 Sat 02:03] </span></span> <br />
-Git repo: <a href="https://github.com/kabu1204/ILisp">ILisp</a>
+<p>
+rlisp is a better(compared with my previous project <a href="https://github.com/kabu1204/ILisp">ILisp</a>) Lisp interpreter written in Rust.
 </p>
 
 <p>
-Memo: <a href="https://mp.weixin.qq.com/s/lM-R7T3fzYL5OvBhK2Et8w">A C++ implementation of Lisp interpreter</a>
-</p></li>
-</ul>
+Motivated by <a href="http://norvig.com/lispy.html">lispy</a>
+</p>
+
+<p>
+I'm still learning Rust and my implementation is not smart and is of low performance.
+</p>
+</div>
+<div id="outline-container-org47b2b28" class="outline-3">
+<h3 id="org47b2b28"><span class="section-number-3">1.1</span> Compared with ILisp</h3>
+<div class="outline-text-3" id="text-1-1">
+<ol class="org-ol">
+<li>more types</li>
+<li>lambda expression</li>
+<li>some list operations: <code>list</code>, <code>cons</code>, <code>append</code>, <code>car</code>, <code>cdr</code>, <code>map</code></li>
+</ol>
+</div>
+</div>
+<div id="outline-container-org11b1d9c" class="outline-3">
+<h3 id="org11b1d9c"><span class="section-number-3">1.2</span> Build &amp; Run</h3>
+<div class="outline-text-3" id="text-1-2">
+<div class="org-src-container">
+<pre class="src src-shell">git clone https://github.com/kabu1204/rlisp.git
+<span style="color: #b35caf;">cd</span> rlisp
+cargo run --release
+</pre>
 </div>
 </div>
 </div>
-<div id="outline-container-org4ba1731" class="outline-3">
-<h3 id="org4ba1731"><span class="section-number-3">1.3</span> Lisp</h3>
+<div id="outline-container-orgbe8a318" class="outline-3">
+<h3 id="orgbe8a318"><span class="section-number-3">1.3</span> Test</h3>
 <div class="outline-text-3" id="text-1-3">
+<div class="org-src-container">
+<pre class="src src-shell">cargo test
+</pre>
 </div>
-<div id="outline-container-org6b1f937" class="outline-4">
-<h4 id="org6b1f937"><span class="section-number-4">1.3.1</span> <span class="todo TODO">TODO</span> Coroutine in Scheme/CL</h4>
+</div>
+</div>
+<div id="outline-container-org62012d7" class="outline-3">
+<h3 id="org62012d7"><span class="section-number-3">1.4</span> Functions</h3>
+<div class="outline-text-3" id="text-1-4">
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="org-left" />
+
+<col  class="org-left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">symbol</th>
+<th scope="col" class="org-left">usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left">define</td>
+<td class="org-left">(define sym expr)</td>
+</tr>
+
+<tr>
+<td class="org-left">if</td>
+<td class="org-left">(if cond conseq alt)</td>
+</tr>
+
+<tr>
+<td class="org-left">+, *</td>
+<td class="org-left">(<b>Op</b> <i>arg1</i> <i>arg2</i> &#x2026;)</td>
+</tr>
+
+<tr>
+<td class="org-left">-, /</td>
+<td class="org-left">(<b>Op</b> <i>arg1</i> <i>arg2</i>)</td>
+</tr>
+
+<tr>
+<td class="org-left">&gt;,&lt;,&gt;=,&lt;=,=,/=</td>
+<td class="org-left">(<b>Cmp</b> <i>arg1* /arg2</i>)</td>
+</tr>
+
+<tr>
+<td class="org-left">min, max</td>
+<td class="org-left">(min <i>arg1</i> <i>arg2</i>)</td>
+</tr>
+
+<tr>
+<td class="org-left">abs</td>
+<td class="org-left">(abs <i>arg</i>)</td>
+</tr>
+
+<tr>
+<td class="org-left">begin</td>
+<td class="org-left">(begin <i>expr1</i> &#x2026; <i>exprn</i>)</td>
+</tr>
+
+<tr>
+<td class="org-left">quote</td>
+<td class="org-left">(quote <i>expr</i>) or '<i>expr</i></td>
+</tr>
+
+<tr>
+<td class="org-left">lambda</td>
+<td class="org-left">(lambda (<i>params&#x2026;</i>) <i>expr</i>)</td>
+</tr>
+
+<tr>
+<td class="org-left">set!</td>
+<td class="org-left">(set! <i>sym</i> <i>expr</i>)</td>
+</tr>
+
+<tr>
+<td class="org-left">map</td>
+<td class="org-left">(map <i>Op</i> '<i>list</i>&#x2026;)</td>
+</tr>
+
+<tr>
+<td class="org-left">apply</td>
+<td class="org-left">(apply <i>Op</i> <i>Atom</i>&#x2026; '<i>list</i>) <i>Atom</i> is optional</td>
+</tr>
+
+<tr>
+<td class="org-left">car</td>
+<td class="org-left">(car '<i>list</i>)</td>
+</tr>
+
+<tr>
+<td class="org-left">cdr</td>
+<td class="org-left">(cdr '<i>list</i>)</td>
+</tr>
+
+<tr>
+<td class="org-left">append</td>
+<td class="org-left">(append '<i>list</i>&#x2026;)</td>
+</tr>
+
+<tr>
+<td class="org-left">cons</td>
+<td class="org-left">(cons '<i>Atom</i> '<i>list</i>)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div id="outline-container-org85de377" class="outline-3">
+<h3 id="org85de377"><span class="section-number-3">1.5</span> Examples</h3>
+<div class="outline-text-3" id="text-1-5">
+<div class="org-src-container">
+<pre class="src src-scheme">&gt;&gt; (<span style="color: #0000cd;">define</span> <span style="color: #ff0000;">fibo</span> (<span style="color: #0000cd;">lambda</span> (x) (<span style="color: #0000cd;">if</span> (&lt; x 2) x (+ (fibo (- x 1)) (fibo (- x 2))))))
+nil
+&gt;&gt; (fibo 20)
+6765
+</pre>
+</div>
+
+<div id="orgc4b9342" class="figure">
+<p><img src="assets/fibo.png" alt="fibo.png" />
+</p>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-scheme">&gt;&gt; (<span style="color: #0000cd;">define</span> <span style="color: #ff0000;">fourth</span> (<span style="color: #0000cd;">lambda</span> (x) (car (cdr (cdr (cdr x))))))
+nil
+&gt;&gt; (fourth (list 1 2 3 4 5))
+4
+</pre>
+</div>
+
+<div id="org317f65a" class="figure">
+<p><img src="assets/fourth.png" alt="fourth.png" />
+</p>
+</div>
 </div>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: yuchengye</p>
-<p class="date">Created: 2021-12-10 Fri 19:11</p>
+<p class="date">Created: 2021-12-10 Fri 19:13</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

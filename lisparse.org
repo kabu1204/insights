@@ -1,8 +1,3 @@
-#+include: ../back.org
-#+TITLE: Enum of Rust used in Lisp interpreter
-#+LATEX_COMPILER: xelatex
-#+LATEX_CLASS: elegantpaper
-#+OPTIONS: prop:t
 * Rust的枚举类型和模式匹配在解释器泛型中的运用
 ** Problems
 在实现解释器时（无论是JSON还是Lisp等），一个必须要考虑的问题是多种类型的如何处理、以及嵌套子表达式应该如何表示。
@@ -10,7 +5,7 @@
 *** Generic type
 <<cpp_src>>
 #+begin_src cpp
-  using i32 = int32_t;
+  using i32 = uint32_t;
   using f64 = double;
   struct Value{
       value_t type;
