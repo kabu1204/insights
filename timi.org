@@ -47,7 +47,7 @@ CLOSED: <2022-03-16 Thu 20:00-21:45> ~ 80mins
 26. 哪些场景下我们需要注意大小端？
 27. 讲讲你常用的排序算法的复杂度和稳定性
 28. quick sort什么时候退化成O(n^2)
-29. std::sort的代码看过吗，是怎么实现的?(SGI版本的STL是introsort+insertion\under{}sort，总之非常复杂。稳定性方面sort稳定，stable\under{}sort是稳定的)
+29. std::sort的代码看过吗，是怎么实现的?(SGI版本的STL是introsort+insertion\under{}sort，总之非常复杂。稳定性方面sort不稳定，stable\under{}sort是稳定的)
 30. 内存对齐的作用？
 31. 讲讲多态
 32. 动态链接库和静态链接库的区别
