@@ -1,0 +1,363 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2022-03-17 Thu 15:00 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>字节跳动暑期实习后端开发工程师-技术中台一面</title>
+<meta name="generator" content="Org mode" />
+<meta name="author" content="于承业" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: auto;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline; margin-top: 14px;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { width: 90%; }
+  /*]]>*/-->
+</style>
+<script type="text/javascript">
+// @license magnet:?xt=urn:btih:e95b018ef3580986a04669f1b5879592219e2a7a&dn=public-domain.txt Public Domain
+<!--/*--><![CDATA[/*><!--*/
+     function CodeHighlightOn(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.add("code-highlighted");
+         target.classList.add("code-highlighted");
+       }
+     }
+     function CodeHighlightOff(elem, id)
+     {
+       var target = document.getElementById(id);
+       if(null != target) {
+         elem.classList.remove("code-highlighted");
+         target.classList.remove("code-highlighted");
+       }
+     }
+    /*]]>*///-->
+// @license-end
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">字节跳动暑期实习后端开发工程师-技术中台一面</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#org639fd7a">1. <span class="done DONE">DONE</span> 已通过</a></li>
+<li><a href="#org115ae25">2. 总体感受</a></li>
+<li><a href="#org9425681">3. 算法题（先陈述思路，然后写代码，限时30min）</a></li>
+<li><a href="#org0e57cf3">4. 基础知识</a>
+<ul>
+<li><a href="#org31a7287">4.1. C++</a></li>
+<li><a href="#orgeb25643">4.2. 计网</a></li>
+<li><a href="#org5075498">4.3. 操作系统</a></li>
+<li><a href="#orgb1c8582">4.4. 数据库（我说我没复习）</a></li>
+</ul>
+</li>
+<li><a href="#org5677898">5. 反问</a></li>
+</ul>
+</div>
+</div>
+<p>
+<a href="./index.html">Back to index</a>
+</p>
+
+<div id="outline-container-org639fd7a" class="outline-2">
+<h2 id="org639fd7a"><span class="section-number-2">1</span> <span class="done DONE">DONE</span> 已通过</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+CLOSED: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-03-16 Wed&gt; </span></span> ~ 1hour
+</p>
+
+<p>
+原本以为铁挂，感谢面试官。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org115ae25" class="outline-2">
+<h2 id="org115ae25"><span class="section-number-2">2</span> 总体感受</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+后端开发，多背八股。之前准备客户端比较多，没复习数据库，哎。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9425681" class="outline-2">
+<h2 id="org9425681"><span class="section-number-2">3</span> 算法题（先陈述思路，然后写代码，限时30min）</h2>
+<div class="outline-text-2" id="text-3">
+<ol class="org-ol">
+<li>给你一个循环右移N（未知）位后的严格单调数组，找该数组中位数。
+先二分找到最大值下标mid；len为奇数，中位数下标=(mid+len/2+1)%len
+len为偶数，中位数下标是(mid+len/2)%len和(mid+len/2+1)%len</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-org0e57cf3" class="outline-2">
+<h2 id="org0e57cf3"><span class="section-number-2">4</span> 基础知识</h2>
+<div class="outline-text-2" id="text-4">
+</div>
+<div id="outline-container-org31a7287" class="outline-3">
+<h3 id="org31a7287"><span class="section-number-3">4.1</span> C++</h3>
+<div class="outline-text-3" id="text-4-1">
+<ol class="org-ol">
+<li>new/delete和malloc/free的区别</li>
+<li>什么时候用delete，什么时候用delete[]</li>
+<li>用错了有什么后果？</li>
+<li>四种智能指针</li>
+<li>shared_ptr是线程安全的吗？</li>
+<li>你怎么实现线程安全的shared_ptr？</li>
+<li>四种cast</li>
+<li>常用stl容器</li>
+<li>vector向push_back元素时可能会发生什么</li>
+<li>map和set的底层</li>
+<li>红黑树是什么</li>
+<li>set中，红黑树的每个节点都存了什么，只有key吗？</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-orgeb25643" class="outline-3">
+<h3 id="orgeb25643"><span class="section-number-3">4.2</span> 计网</h3>
+<div class="outline-text-3" id="text-4-2">
+<ol class="org-ol">
+<li>TCP和UDP的区别</li>
+<li>TCP为什么可靠</li>
+<li>TCP报头为什么要有序列号</li>
+<li>讲讲TCP的拥塞控制</li>
+<li>发送窗口怎么决定</li>
+<li>讲讲浏览器访问网址时，DNS的整个过程。</li>
+<li>你知道全世界有几台根域名服务器吗（不知道也没关系）</li>
+<li>那么，每次LDNS服务器都会去向根域名服务器查询吗？</li>
+<li>既然你说不会，那它是怎么做的？</li>
+<li>你知道访问同一个ip地址，可以转发到不同域名的服务器上的技术是什么吗？</li>
+<li>HTTPS的证书为什么可信（注意是可信）？</li>
+<li>服务器编一个证书，你怎么知道这个证书是可信的？</li>
+</ol>
+</div>
+</div>
+
+
+<div id="outline-container-org5075498" class="outline-3">
+<h3 id="org5075498"><span class="section-number-3">4.3</span> 操作系统</h3>
+<div class="outline-text-3" id="text-4-3">
+<ol class="org-ol">
+<li>进程和线程区别</li>
+<li>乐观锁和悲观锁</li>
+<li>IO多路复用</li>
+<li>它们的区别</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-orgb1c8582" class="outline-3">
+<h3 id="orgb1c8582"><span class="section-number-3">4.4</span> 数据库（我说我没复习）</h3>
+<div class="outline-text-3" id="text-4-4">
+<ol class="org-ol">
+<li>哪些场景下索引会失效</li>
+</ol>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org5677898" class="outline-2">
+<h2 id="org5677898"><span class="section-number-2">5</span> 反问</h2>
+<div class="outline-text-2" id="text-5">
+<ol class="org-ol">
+<li>面试表现。面试官说其它回答的还可以，但是数据库在很多岗位都要使用，最好比较熟悉，但是实习主要看中潜力，所以我们还需要复核，你还是有可能通过的。</li>
+<li>如果有幸拿到offer，进去之后主要做什么？</li>
+<li>暑期实习项目是否有期限？</li>
+</ol>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: 于承业</p>
+<p class="date">Created: 2022-03-17 Thu 15:00</p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
