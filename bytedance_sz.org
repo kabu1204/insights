@@ -1,8 +1,8 @@
-#+include: back.org
-#+TITLE: 字节跳动暑期实习后端开发工程师-内容安全
+'#+include: back.org
+#+TITLE: 字节跳动暑期实习后端开发工程师-内容安全(已offer)
 
 
-* DONE 技术中台 二面已挂
+* DONE 技术中台
 
 CLOSED: <2022-03-16 Wed> ~ 1hour
 
