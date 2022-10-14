@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2022-10-14 Fri 08:53 -->
+<!-- 2022-10-14 Fri 09:23 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>一次提给Bytedance/gopkg:lscq的PR（增加arm64支持）的合并历程</title>
@@ -201,12 +201,13 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org88df975">1. Intro</a></li>
-<li><a href="#org63d5b70">2. LSCQ</a></li>
-<li><a href="#org0d1de60">3. Plan9 Asm</a></li>
-<li><a href="#orgf922fe7">4. CASP and LDAXP/STLXP</a></li>
-<li><a href="#org1f83b3d">5. 在darwin_arm64上识别CASP是否可用</a></li>
-<li><a href="#orgf598dc1">6. unexpected fault address</a></li>
+<li><a href="#org1fae156">1. Intro</a></li>
+<li><a href="#orgc8d9958">2. LSCQ</a></li>
+<li><a href="#orgc2fcad0">3. Plan9 Asm</a></li>
+<li><a href="#orgfd4fa32">4. CASP and LDAXP/STLXP</a></li>
+<li><a href="#org9eb491b">5. 在darwin_arm64上识别CASP是否可用</a></li>
+<li><a href="#org8978649">6. unexpected fault address</a></li>
+<li><a href="#orgf363376">7. 总结</a></li>
 </ul>
 </div>
 </div>
@@ -214,13 +215,13 @@
 <a href="./index.html">Back to index</a>
 </p>
 
-<div id="outline-container-org88df975" class="outline-2">
-<h2 id="org88df975"><span class="section-number-2">1.</span> Intro</h2>
+<div id="outline-container-org1fae156" class="outline-2">
+<h2 id="org1fae156"><span class="section-number-2">1.</span> Intro</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 <a href="https://github.com/bytedance/gopkg">bytedance/gopkg</a> 是golang的一些组件库，如mcache（内存池），fastrand，syncx（多核场景比sync.Pool快30%），gctuner（调整多核场景的GC），gopool（字节内部也在用的高性能协程池）等。
 其中的collection包中包含了一些无锁数据结构，如skipmap, lscq。
-此次PR:<a href="https://github.com/bytedance/gopkg/pull/152">feat(lscq): add arm64 support #152</a>是我第一次直接向开源项目贡献代码，目的是为了增加LSCQ对ARM64处理器（ARMv8指令集）的支持.
+此次PR(feat(lscq): add arm64 support):<a href="https://github.com/bytedance/gopkg/pull/152">https://github.com/bytedance/gopkg/pull/152</a> 是我第一次直接向开源项目贡献代码，目的是为了增加LSCQ对ARM64处理器（ARMv8指令集）的支持.
 新增代码只有一百多行，期间，我反复阅读了LSCQ的论文，复现了<a href="https://github.com/kabu1204/lockfree/tree/master/queue">LSCQ</a>，并与bytedance/gopkg中的LSCQ做了对比，翻阅了<a href="https://go.dev/doc/asm">go asm guide</a>和<a href="https://pkg.go.dev/cmd/internal/obj/arm64">go arm64 package doc</a>，阅读了go的相关源码（<a href="https://cs.opensource.google/go/go/+/refs/tags/go1.19.2:src/runtime/internal/atomic/">runtime/internal/atomic</a>和<a href="https://cs.opensource.google/go/go/+/refs/tags/go1.19.2:src/internal/cpu/">internal/cpu</a>），查阅了<a href="https://developer.arm.com/documentation/ddi0487/latest">ARMv8-A指令集手册</a>，遇到并解决了以下几个问题：
 </p>
 <ol class="org-ol">
@@ -236,8 +237,8 @@
 </div>
 </div>
 
-<div id="outline-container-org63d5b70" class="outline-2">
-<h2 id="org63d5b70"><span class="section-number-2">2.</span> LSCQ</h2>
+<div id="outline-container-orgc8d9958" class="outline-2">
+<h2 id="orgc8d9958"><span class="section-number-2">2.</span> LSCQ</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 LSCQ是collection中用go+汇编实现的high-performance, lock-free, scalable, memory-efficient的FIFO队列。
@@ -273,8 +274,8 @@ LSCQ快的三个原因：
 </div>
 </div>
 
-<div id="outline-container-org0d1de60" class="outline-2">
-<h2 id="org0d1de60"><span class="section-number-2">3.</span> Plan9 Asm</h2>
+<div id="outline-container-orgc2fcad0" class="outline-2">
+<h2 id="orgc2fcad0"><span class="section-number-2">3.</span> Plan9 Asm</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 Go编译器采用Plan9汇编语法。Plan9是著名的贝尔实验室的一个项目，是一个操作系统和配套软件的集合，它和主流的现代操作系统的模型区别很大，但它的很多理念是十分先进的，你能在这个来自于上个世纪的系统中找到分布式的影子。你可以进一步阅读：<a href="https://9p.io/sys/doc/9.html">Plan 9 from Bell Labs</a>
@@ -301,8 +302,8 @@ Plan9汇编语法其实不难，你可以阅读：<a href="https://go.dev/doc/as
 </div>
 </div>
 
-<div id="outline-container-orgf922fe7" class="outline-2">
-<h2 id="orgf922fe7"><span class="section-number-2">4.</span> CASP and LDAXP/STLXP</h2>
+<div id="outline-container-orgfd4fa32" class="outline-2">
+<h2 id="orgfd4fa32"><span class="section-number-2">4.</span> CASP and LDAXP/STLXP</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 这两组指令都是用来实现CompareAndSwap操作的。
@@ -317,8 +318,8 @@ LDAXP表示加载128bit数据到两个相邻的寄存器中，并附带Acquire�
 </div>
 </div>
 
-<div id="outline-container-org1f83b3d" class="outline-2">
-<h2 id="org1f83b3d"><span class="section-number-2">5.</span> 在darwin_arm64上识别CASP是否可用</h2>
+<div id="outline-container-org9eb491b" class="outline-2">
+<h2 id="org9eb491b"><span class="section-number-2">5.</span> 在darwin_arm64上识别CASP是否可用</h2>
 <div class="outline-text-2" id="text-5">
 <p>
 CASP比LDAXP/STLXP效率更高，因此我们希望在CASP可用时使用它。
@@ -412,8 +413,8 @@ sysctlEnabled这个函数来自于go源码internal/cpu，我们可以在我们�
 </div>
 </div>
 
-<div id="outline-container-orgf598dc1" class="outline-2">
-<h2 id="orgf598dc1"><span class="section-number-2">6.</span> unexpected fault address</h2>
+<div id="outline-container-org8978649" class="outline-2">
+<h2 id="org8978649"><span class="section-number-2">6.</span> unexpected fault address</h2>
 <div class="outline-text-2" id="text-6">
 <p>
 如果你也尝试用go实现lscq，可能会遇到相同的问题。
@@ -474,10 +475,19 @@ scqsize是1 &lt;&lt; 16。
 </p>
 </div>
 </div>
+
+<div id="outline-container-orgf363376" class="outline-2">
+<h2 id="orgf363376"><span class="section-number-2">7.</span> 总结</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+对我来说这是一次很棒的经历，和志同道合的开发者的沟通也很愉快（见PR），第一次品尝到开源社区的活跃氛围。希望自己以后可以更加活跃地参与到感兴趣的开源项目中。
+</p>
+</div>
+</div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: 于承业</p>
-<p class="date">Created: 2022-10-14 Fri 08:53</p>
+<p class="date">Created: 2022-10-14 Fri 09:23</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

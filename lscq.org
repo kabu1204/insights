@@ -4,7 +4,7 @@
 * Intro
 [[https://github.com/bytedance/gopkg][bytedance/gopkg]] 是golang的一些组件库，如mcache（内存池），fastrand，syncx（多核场景比sync.Pool快30%），gctuner（调整多核场景的GC），gopool（字节内部也在用的高性能协程池）等。
 其中的collection包中包含了一些无锁数据结构，如skipmap, lscq。
-此次PR:[[https://github.com/bytedance/gopkg/pull/152][feat(lscq): add arm64 support #152]]是我第一次直接向开源项目贡献代码，目的是为了增加LSCQ对ARM64处理器（ARMv8指令集）的支持.
+此次PR(feat(lscq): add arm64 support):https://github.com/bytedance/gopkg/pull/152 是我第一次直接向开源项目贡献代码，目的是为了增加LSCQ对ARM64处理器（ARMv8指令集）的支持.
 新增代码只有一百多行，期间，我反复阅读了LSCQ的论文，复现了[[https://github.com/kabu1204/lockfree/tree/master/queue][LSCQ]]，并与bytedance/gopkg中的LSCQ做了对比，翻阅了[[https://go.dev/doc/asm][go asm guide]]和[[https://pkg.go.dev/cmd/internal/obj/arm64][go arm64 package doc]]，阅读了go的相关源码（[[https://cs.opensource.google/go/go/+/refs/tags/go1.19.2:src/runtime/internal/atomic/][runtime/internal/atomic]]和[[https://cs.opensource.google/go/go/+/refs/tags/go1.19.2:src/internal/cpu/][internal/cpu]]），查阅了[[https://developer.arm.com/documentation/ddi0487/latest][ARMv8-A指令集手册]]，遇到并解决了以下几个问题：
 1. CASP指令是ARMv8.1新加入的，在ARMv8.0只能使用LDAXP/STLXP指令对
 2. 如何判断CPU是否具有CASP指令（在不同操作系统上方式不同）？
@@ -170,3 +170,6 @@ func malloc16B() [scqsize]uint128 {
 #+end_src
 
 关于Go的内存分配的对齐方式，网上并没有搜到有用的相关资料，也许我需要阅读Go内存分配的源码或者在Go官方社区寻求解答。
+
+* 总结
+对我来说这是一次很棒的经历，和志同道合的开发者的沟通也很愉快（见PR），第一次品尝到开源社区的活跃氛围。希望自己以后可以更加活跃地参与到感兴趣的开源项目中。

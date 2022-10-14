@@ -1,23 +1,24 @@
 
 # Table of Contents
 
-1.  [Intro](#org618e924)
-2.  [LSCQ](#orgcd6cd43)
-3.  [Plan9 Asm](#org7212ad0)
-4.  [CASP and LDAXP/STLXP](#org87b3998)
-5.  [在darwin_arm64上识别CASP是否可用](#org37ff7ac)
-6.  [unexpected fault address](#orgb382db3)
+1.  [Intro](#org5967565)
+2.  [LSCQ](#orge19d2b2)
+3.  [Plan9 Asm](#org33b3086)
+4.  [CASP and LDAXP/STLXP](#orgc7519ff)
+5.  [在darwin_arm64上识别CASP是否可用](#org11b5a8f)
+6.  [unexpected fault address](#org8119002)
+7.  [总结](#org4fabe3e)
 
 [Back to index](./index.html)
 
 
-<a id="org618e924"></a>
+<a id="org5967565"></a>
 
 # Intro
 
 [bytedance/gopkg](https://github.com/bytedance/gopkg) 是golang的一些组件库，如mcache（内存池），fastrand，syncx（多核场景比sync.Pool快30%），gctuner（调整多核场景的GC），gopool（字节内部也在用的高性能协程池）等。
 其中的collection包中包含了一些无锁数据结构，如skipmap, lscq。
-此次PR:[feat(lscq): add arm64 support #152](https://github.com/bytedance/gopkg/pull/152)是我第一次直接向开源项目贡献代码，目的是为了增加LSCQ对ARM64处理器（ARMv8指令集）的支持.
+此次PR(feat(lscq): add arm64 support):<https://github.com/bytedance/gopkg/pull/152> 是我第一次直接向开源项目贡献代码，目的是为了增加LSCQ对ARM64处理器（ARMv8指令集）的支持.
 新增代码只有一百多行，期间，我反复阅读了LSCQ的论文，复现了[LSCQ](https://github.com/kabu1204/lockfree/tree/master/queue)，并与bytedance/gopkg中的LSCQ做了对比，翻阅了[go asm guide](https://go.dev/doc/asm)和[go arm64 package doc](https://pkg.go.dev/cmd/internal/obj/arm64)，阅读了go的相关源码（[runtime/internal/atomic](https://cs.opensource.google/go/go/+/refs/tags/go1.19.2:src/runtime/internal/atomic/)和[internal/cpu](https://cs.opensource.google/go/go/+/refs/tags/go1.19.2:src/internal/cpu/)），查阅了[ARMv8-A指令集手册](https://developer.arm.com/documentation/ddi0487/latest)，遇到并解决了以下几个问题：
 
 1.  CASP指令是ARMv8.1新加入的，在ARMv8.0只能使用LDAXP/STLXP指令对
@@ -28,7 +29,7 @@
 本文将简单介绍LSCQ、Plan9汇编以及几个问题的解决过程。
 
 
-<a id="orgcd6cd43"></a>
+<a id="orge19d2b2"></a>
 
 # LSCQ
 
@@ -53,7 +54,7 @@ LSCQ快的三个原因：
 3.  LSCQ通过FAA原子地获取head/tail指向的slot的使用权
 
 
-<a id="org7212ad0"></a>
+<a id="org33b3086"></a>
 
 # Plan9 Asm
 
@@ -72,7 +73,7 @@ Plan9汇编语法其实不难，你可以阅读：[A Quick Guide to Go's Assembl
 第2和3需要对照[https://pkg.go.dev/cmd/internal/obj/arm64](https://pkg.go.dev/cmd/internal/obj/arm64)
 
 
-<a id="org87b3998"></a>
+<a id="orgc7519ff"></a>
 
 # CASP and LDAXP/STLXP
 
@@ -84,7 +85,7 @@ CASP是ARMv8.1新加入的指令。
 LDAXP表示加载128bit数据到两个相邻的寄存器中，并附带Acquire内存屏障（所有写内存指令在该指令之前必须完成，并且对该条指令之后的所有指令可见）。STLXP表示讲相邻两个寄存器的内容写入内存地址的128bit空间中，并附带Release内存屏障（这条指令的写结果对之后的指令可见）。X表示Exclusive，LDAXP会设置exclusive标志位，STLXP在写前若发现设置了exclusive但内容已被修改，则放弃写入。
 
 
-<a id="org37ff7ac"></a>
+<a id="org11b5a8f"></a>
 
 # 在darwin_arm64上识别CASP是否可用
 
@@ -160,7 +161,7 @@ sysctlEnabled这个函数来自于go源码internal/cpu，我们可以在我们�
 该commit的详细信息：[fix(lscq): detect atomics feature correctly on darwin](https://github.com/bytedance/gopkg/pull/152/commits/8d0e9d8ab529466f05df3ac1c01692ebc6d698e5)
 
 
-<a id="orgb382db3"></a>
+<a id="org8119002"></a>
 
 # unexpected fault address
 
@@ -202,4 +203,11 @@ scqsize是1 << 16。
     }
 
 关于Go的内存分配的对齐方式，网上并没有搜到有用的相关资料，也许我需要阅读Go内存分配的源码或者在Go官方社区寻求解答。
+
+
+<a id="org4fabe3e"></a>
+
+# 总结
+
+对我来说这是一次很棒的经历，和志同道合的开发者的沟通也很愉快（见PR），第一次品尝到开源社区的活跃氛围。希望自己以后可以更加活跃地参与到感兴趣的开源项目中。
 
