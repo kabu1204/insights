@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2022-10-14 Fri 08:53 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>一次提给Bytedance/gopkg:lscq的PR（增加arm64支持）的合并历程</title>
+<meta name="author" content="于承业" />
+<meta name="generator" content="Org Mode" />
+<style>
+  #content { max-width: 60em; margin: auto; }
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #e6e6e6;
+    border-radius: 3px;
+    background-color: #f2f2f2;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: auto;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    padding: 3px;
+    color: #555;
+    background-color: #f2f2f299;
+  }
+  pre.src:hover:before { display: inline; margin-top: 14px;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-authinfo::before { content: 'Authinfo'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { }
+</style>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">一次提给Bytedance/gopkg:lscq的PR（增加arm64支持）的合并历程</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org88df975">1. Intro</a></li>
+<li><a href="#org63d5b70">2. LSCQ</a></li>
+<li><a href="#org0d1de60">3. Plan9 Asm</a></li>
+<li><a href="#orgf922fe7">4. CASP and LDAXP/STLXP</a></li>
+<li><a href="#org1f83b3d">5. 在darwin_arm64上识别CASP是否可用</a></li>
+<li><a href="#orgf598dc1">6. unexpected fault address</a></li>
+</ul>
+</div>
+</div>
+<p>
+<a href="./index.html">Back to index</a>
+</p>
+
+<div id="outline-container-org88df975" class="outline-2">
+<h2 id="org88df975"><span class="section-number-2">1.</span> Intro</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<a href="https://github.com/bytedance/gopkg">bytedance/gopkg</a> 是golang的一些组件库，如mcache（内存池），fastrand，syncx（多核场景比sync.Pool快30%），gctuner（调整多核场景的GC），gopool（字节内部也在用的高性能协程池）等。
+其中的collection包中包含了一些无锁数据结构，如skipmap, lscq。
+此次PR:<a href="https://github.com/bytedance/gopkg/pull/152">feat(lscq): add arm64 support #152</a>是我第一次直接向开源项目贡献代码，目的是为了增加LSCQ对ARM64处理器（ARMv8指令集）的支持.
+新增代码只有一百多行，期间，我反复阅读了LSCQ的论文，复现了<a href="https://github.com/kabu1204/lockfree/tree/master/queue">LSCQ</a>，并与bytedance/gopkg中的LSCQ做了对比，翻阅了<a href="https://go.dev/doc/asm">go asm guide</a>和<a href="https://pkg.go.dev/cmd/internal/obj/arm64">go arm64 package doc</a>，阅读了go的相关源码（<a href="https://cs.opensource.google/go/go/+/refs/tags/go1.19.2:src/runtime/internal/atomic/">runtime/internal/atomic</a>和<a href="https://cs.opensource.google/go/go/+/refs/tags/go1.19.2:src/internal/cpu/">internal/cpu</a>），查阅了<a href="https://developer.arm.com/documentation/ddi0487/latest">ARMv8-A指令集手册</a>，遇到并解决了以下几个问题：
+</p>
+<ol class="org-ol">
+<li>CASP指令是ARMv8.1新加入的，在ARMv8.0只能使用LDAXP/STLXP指令对</li>
+<li>如何判断CPU是否具有CASP指令（在不同操作系统上方式不同）？</li>
+<li>unexpected fault address (arm64 pair指令要求16byte对齐)</li>
+<li>golang.org/x/sys/cpu不支持darwin_arm64平台，如何判断cpu是否具有casp指令？</li>
+</ol>
+
+<p>
+本文将简单介绍LSCQ、Plan9汇编以及几个问题的解决过程。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org63d5b70" class="outline-2">
+<h2 id="org63d5b70"><span class="section-number-2">2.</span> LSCQ</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+LSCQ是collection中用go+汇编实现的high-performance, lock-free, scalable, memory-efficient的FIFO队列。
+<a href="https://drops.dagstuhl.de/opus/volltexte/2019/11335/pdf/LIPIcs-DISC-2019-28.pdf">A Scalable, Portable, and Memory-Efficient Lock-Free FIFO Queue</a>
+</p>
+<ul class="org-ul">
+<li>何谓高性能？LSCQ在各种场景（多核，enqueue:dequeue=3:7, 5:5, 7:3）下远快于主流并发队列（MSQueue, channel, lock+linked queue等）</li>
+<li><p>
+何谓无锁？
+无锁的意义比"不用加锁"更大，尤其是在高并发场景。
+</p>
+<blockquote>
+<p>
+  We consider an algorithm lock-free if at least one thread can make progress in a finite number
+of steps.
+</p>
+</blockquote>
+<p>
+在有锁数据结构中，同时只有一个thread持有锁，当它被OS调度换出时，任何其它thread将无法make progress，或阻塞，或忙等（spin-lock），以等待*不知道何时*才能被再次被调度的持有锁的thread。 而无锁数据结构（前提：无锁逻辑正确），众多thread同一时间至少有一个可以顺利执行成功（如dequeue成功）。由此，目前很多无锁数据结构基于CAS、FAA等Read-Modify-Write操作，这类操作可以保证至少有一个并发线程胜出，其它线程则回到循环进行重复。
+CAS经常用在队列元素的替换，一种朴素的无锁队列实现就是链表+CAS替换队首队尾的元素，但这样性能差且内存效率低；目前学术界性能最高的无锁队列都是基于ring buffer + FAA + CAS。FAA原子地增加整型变量的值，性能比CAS好，通常搭配array-based ring buffer来获取某个槽（下标）的使用权，由此衍生出了infinite array queue的抽象概念，可以帮助我们bound环形队列中的元素个数，具体可以阅读论文。
+</p></li>
+<li>无锁 != 高性能 &amp;&amp; !(无锁比有锁快)。如果无锁算法设计的不够精良，在关键路径上循环过多次数，性能很可能比加锁更差！现代操作系统提供的锁速度通常在几十纳秒级别。现代CPU提供的CAS操作的延迟通常在个位数纳秒，但仍然是纳秒级，CAS失败次数过多，依然将是很大开销。<a href="https://www.cs.rochester.edu/~scott/papers/1996_PODC_queues.pdf">MSQueue</a>是一个经典的无锁队列，于1996年提出，目前它的表现可能还不如链表+lock。golang自带的channel内部使用了futex，快过市面上很多concurrent-safe queue。</li>
+</ul>
+
+<p>
+LSCQ快的三个原因：
+</p>
+<ol class="org-ol">
+<li>LSCQ通过分析定量head最多落后tail多少个slot，设置threshold惩罚无效的dequeue操作，消除了LSCQ中存在的活锁问题。</li>
+<li>LSCQ通过128bit的CAS操作原子地替换data和cycle，提高了效率</li>
+<li>LSCQ通过FAA原子地获取head/tail指向的slot的使用权</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-org0d1de60" class="outline-2">
+<h2 id="org0d1de60"><span class="section-number-2">3.</span> Plan9 Asm</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Go编译器采用Plan9汇编语法。Plan9是著名的贝尔实验室的一个项目，是一个操作系统和配套软件的集合，它和主流的现代操作系统的模型区别很大，但它的很多理念是十分先进的，你能在这个来自于上个世纪的系统中找到分布式的影子。你可以进一步阅读：<a href="https://9p.io/sys/doc/9.html">Plan 9 from Bell Labs</a>
+因此Plan9汇编就是Plan9项目中使用的汇编语法，和大家平时写的ATT汇编/Intel汇编语法有很大区别。
+</p>
+
+<p>
+Plan9汇编语法其实不难，你可以阅读：<a href="https://go.dev/doc/asm">A Quick Guide to Go's Assembler</a>以及<a href="https://9p.io/sys/doc/asm.pdf">A Manual for the Plan 9 assembler</a>
+虽然是英文的，但实际上比你能找到的所有博客都要全面且详细。
+</p>
+
+<p>
+要使用Plan9语法写出正确的ARM64汇编，我个人认为有几个点必须注意：
+</p>
+<ol class="org-ol">
+<li>Plan9定义的4个伪寄存器：FP/PC/SB/SP</li>
+<li>Plan9关于ARM64的寄存器命名规则</li>
+<li>Plan9关于ARM64的操作符命名规则以及操作数顺序的调整</li>
+</ol>
+
+<p>
+第2和3需要对照<a href="https://pkg.go.dev/cmd/internal/obj/arm64">https://pkg.go.dev/cmd/internal/obj/arm64</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf922fe7" class="outline-2">
+<h2 id="orgf922fe7"><span class="section-number-2">4.</span> CASP and LDAXP/STLXP</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+这两组指令都是用来实现CompareAndSwap操作的。
+P后缀表示指令是double word宽度的，对于CPU来说，word等于位宽。因此在64位平台上表示一次操作128bit数据。
+</p>
+
+<p>
+CASP是ARMv8.1新加入的指令。
+而在此之前，要在ARMv8平台上实现CAS，通常借助LDAXP/STLXP。
+LDAXP表示加载128bit数据到两个相邻的寄存器中，并附带Acquire内存屏障（所有写内存指令在该指令之前必须完成，并且对该条指令之后的所有指令可见）。STLXP表示讲相邻两个寄存器的内容写入内存地址的128bit空间中，并附带Release内存屏障（这条指令的写结果对之后的指令可见）。X表示Exclusive，LDAXP会设置exclusive标志位，STLXP在写前若发现设置了exclusive但内容已被修改，则放弃写入。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1f83b3d" class="outline-2">
+<h2 id="org1f83b3d"><span class="section-number-2">5.</span> 在darwin_arm64上识别CASP是否可用</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+CASP比LDAXP/STLXP效率更高，因此我们希望在CASP可用时使用它。
+CASP指令属于ARMv8的atomics feature，我们需要识别CPU features，看其中是否使能了atomics。
+起初，我使用golang.org/x/sys/cpu中的ARM64.HasATOMICS来判断:
+</p>
+<div class="org-src-container">
+<pre class="src src-go"><span style="color: #0000cd;">import</span> <span style="color: #8b008b;">"golang.org/x/sys/cpu"</span>
+
+<span style="color: #0000cd;">var</span> <span style="color: #a0522d;">arm64HasAtomics</span> = cpu.ARM64.HasATOMICS
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-assembly">TEXT ·compareAndSwapUint128(SB), NOSPLIT, $0-41
+	MOVD	addr+0(FP), R0
+	MOVD	old1+8(FP), R2
+	MOVD	old2+16(FP), R3
+	MOVD	new1+24(FP), R4
+	MOVD	new2+32(FP), R5
+	MOVBU	·arm64HasAtomics+0(SB), R1
+	CBZ 	R1, load_store_loop
+	MOVD	R2, R6
+	MOVD	R3, R7
+	CASPD	(R2, R3), (R0), (R4, R5)
+	CMP 	R2, R6
+	BNE 	ok
+	CMP 	R3, R7
+	CSET	EQ, R0
+	MOVB	R0, ret+40(FP)
+	RET
+load_store_loop:
+	LDAXP	(R0), (R6, R7)
+	CMP 	R2, R6
+	BNE 	ok
+	CMP 	R3, R7
+	BNE 	ok
+	STLXP	(R4, R5), (R0), R6
+	CBNZ	R6, load_store_loop
+ok:
+	CSET	EQ, R0
+	MOVB	R0, ret+40(FP)
+	RET
+</pre>
+</div>
+
+<p>
+然而，当我查看golang.org/x/sys/cpu的源码时发现，它并不支持darwin_arm64平台，因此arm64HasAtomics为false，实际上应该为true.
+在darwin(macos)中，我们可以使用sysctl获取cpu features：
+<img src="assets/2022-10-14_07-24-08_screenshot.png" alt="2022-10-14_07-24-08_screenshot.png" />
+</p>
+
+<p>
+或者使用darwin提供的sysctlbyname系统调用来检查某个feature是否存在：
+</p>
+<div class="org-src-container">
+<pre class="src src-go"><span style="color: #b22222;">//</span><span style="color: #b22222;">go:noescape</span>
+<span style="color: #0000cd;">func</span> <span style="color: #ff0000;">getsysctlbyname</span>(<span style="color: #a0522d;">name</span> []<span style="color: #228b22;">byte</span>) (<span style="color: #228b22;">int32</span>, <span style="color: #228b22;">int32</span>)
+
+<span style="color: #0000cd;">func</span> <span style="color: #ff0000;">sysctlEnabled</span>(<span style="color: #a0522d;">name</span> []<span style="color: #228b22;">byte</span>) <span style="color: #228b22;">bool</span> {
+        <span style="color: #a0522d;">ret</span>, <span style="color: #a0522d;">value</span> := <span style="color: #ff0000;">getsysctlbyname</span>(name)
+        <span style="color: #0000cd;">if</span> ret &lt; 0 {
+                <span style="color: #0000cd;">return</span> <span style="color: #00006DE06DE0;">false</span>
+        }
+        <span style="color: #0000cd;">return</span> value &gt; 0
+}
+</pre>
+</div>
+
+<p>
+sysctlEnabled这个函数来自于go源码internal/cpu，我们可以在我们的代码中使用go:linkname链接到这个函数：
+</p>
+<div class="org-src-container">
+<pre class="src src-go"><span style="color: #b22222;">//</span><span style="color: #b22222;">go:linkname sysctlEnabled internal/cpu.sysctlEnabled</span>
+<span style="color: #0000cd;">func</span> <span style="color: #ff0000;">sysctlEnabled</span>(<span style="color: #a0522d;">name</span> []<span style="color: #228b22;">byte</span>) <span style="color: #228b22;">bool</span>
+
+<span style="color: #0000cd;">func</span> <span style="color: #ff0000;">detectArm64HasAtomics</span>() <span style="color: #228b22;">bool</span> {
+        <span style="color: #0000cd;">switch</span> runtime.GOOS {
+        <span style="color: #0000cd;">case</span> <span style="color: #8b008b;">"darwin"</span>:
+                <span style="color: #0000cd;">return</span> <span style="color: #ff0000;">sysctlEnabled</span>([]<span style="color: #ff0000;">byte</span>(<span style="color: #8b008b;">"hw.optional.armv8_1_atomics\x00"</span>))
+        <span style="color: #0000cd;">default</span>:
+                <span style="color: #0000cd;">return</span> cpu.ARM64.HasATOMICS
+        }
+}
+</pre>
+</div>
+
+<p>
+该commit的详细信息：<a href="https://github.com/bytedance/gopkg/pull/152/commits/8d0e9d8ab529466f05df3ac1c01692ebc6d698e5">fix(lscq): detect atomics feature correctly on darwin</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgf598dc1" class="outline-2">
+<h2 id="orgf598dc1"><span class="section-number-2">6.</span> unexpected fault address</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+如果你也尝试用go实现lscq，可能会遇到相同的问题。
+每个SCQ的struct定义如下：
+</p>
+<div class="org-src-container">
+<pre class="src src-go"><span style="color: #0000cd;">type</span> <span style="color: #228b22;">SCQ</span> <span style="color: #0000cd;">struct</span> {
+        <span style="color: #b22222;">// </span><span style="color: #b22222;">... &#30465;&#30053;</span>
+        ring      [scqsize]<span style="color: #228b22;">uint128</span>
+}
+</pre>
+</div>
+<p>
+SCQ结构体按8B对齐（起始地址为8的倍数），ring之前的成员占520B，ring的每个元素占16B。
+该结构体的大小为(520+scqsize*16)B。
+如果SCQ的起始地址是16的倍数，这样ring的起始地址为addr(SCQ.ring) = addr(SCQ)+520，
+ring[0]和ring的地址一样，因此ring[0]并没有按照16B对齐。
+这导致一个严重的问题：CASP或是LDAXP/STLXP都是要求内存地址按16B对齐的，否则会引发bus error，进而导致提示unexpected fault address错误。
+</p>
+
+<p>
+go不支持手动对齐，它的对齐大小是1,4或8.
+可能的解决方法：
+</p>
+<ol class="org-ol">
+<li>在ring前添加一个8B的成员，让ring按16B对齐，但是我们并不知道SCQ是否已按照16B对齐。</li>
+<li><p>
+让ring变成一个指针，指向堆上的数组。
+</p>
+<div class="org-src-container">
+<pre class="src src-go"><span style="color: #0000cd;">type</span> <span style="color: #228b22;">SCQ</span> <span style="color: #0000cd;">struct</span> {
+       <span style="color: #b22222;">// </span><span style="color: #b22222;">... &#30465;&#30053;</span>
+       ring      *[scqsize]<span style="color: #228b22;">uint128</span>
+}
+</pre>
+</div></li>
+</ol>
+<p>
+scqsize是1 &lt;&lt; 16。
+在堆上分配一个连续的大片内存时，通常首先使用大的内存块（比如 1 &lt;&lt; 10 + 1 &lt;&lt; 6），而只要内存块的order比3大，通常它们都是按照自己的大小对齐的，因此方法2中，ring[0]很有可能是按照16B对齐的，但也只是很可能。我自己实测全是按照16B对齐的，各种bench也没有出现问题。
+</p>
+
+<p>
+严谨起见，可能需要使用cgo分配严格16B对齐的数组：
+</p>
+<div class="org-src-container">
+<pre class="src src-go"><span style="color: #0000cd;">func</span> <span style="color: #ff0000;">malloc16B</span>() [scqsize]<span style="color: #228b22;">uint128</span> {
+        <span style="color: #0000cd;">const</span> <span style="color: #00006DE06DE0;">size</span> = scqsize * 16
+        <span style="color: #a0522d;">ptr</span> := C.<span style="color: #ff0000;">_mm_malloc</span>((C.size_t)(size), 16)
+        <span style="color: #a0522d;">array</span> := *(*[scqsize]<span style="color: #228b22;">uint128</span>)(unsafe.<span style="color: #ff0000;">Pointer</span>(ptr))
+        <span style="color: #0000cd;">return</span> array
+}
+</pre>
+</div>
+
+<p>
+关于Go的内存分配的对齐方式，网上并没有搜到有用的相关资料，也许我需要阅读Go内存分配的源码或者在Go官方社区寻求解答。
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: 于承业</p>
+<p class="date">Created: 2022-10-14 Fri 08:53</p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

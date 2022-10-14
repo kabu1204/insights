@@ -17,6 +17,7 @@ I'm short of knowledge but insisting on learning.
 5. [[./timi.html][腾讯IEG-天美L1-游戏客户端开发实习面经（已offer）]]
 6. [[./bytedance_sz.html][字节跳动-内容安全-后端开发实习面经（已offer）]]
 7. [[./ali.html][阿里-淘系技术部-C++研发工程师实习面经（HR面被释放）]]
+8. [[./lscq.html][一次提给Bytedance/gopkg:lscq的PR（增加arm64支持）的合并历程]]
 ** Schedules
 My Schedules:[[./agenda.html][agenda]]
 ** Contact me
