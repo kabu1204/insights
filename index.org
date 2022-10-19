@@ -20,5 +20,3 @@ I'm short of knowledge but insisting on learning.
 8. [[./lscq.html][一次提给Bytedance/gopkg:lscq的PR（增加arm64支持）的合并历程]]
 ** Schedules
 My Schedules:[[./agenda.html][agenda]]
-** Contact me
-EMAIL: [[mailto:yuchengye.eric.cy@gmail.com][yuchengye.eric.cy@gmail.com]]
