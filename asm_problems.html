@@ -1,0 +1,645 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2023-01-21 Sat 22:27 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Be careful when writing assembly</title>
+<meta name="author" content="于承业" />
+<meta name="generator" content="Org Mode" />
+<style>
+  #content { max-width: 60em; margin: auto; }
+  .title  { text-align: center;
+             margin-bottom: .2em; }
+  .subtitle { text-align: center;
+              font-size: medium;
+              font-weight: bold;
+              margin-top:0; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { font-family: monospace; color: green; }
+  .priority { font-family: monospace; color: orange; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #e6e6e6;
+    border-radius: 3px;
+    background-color: #f2f2f2;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: auto;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    top: -8px;
+    right: 12px;
+    padding: 3px;
+    color: #555;
+    background-color: #f2f2f299;
+  }
+  pre.src:hover:before { display: inline; margin-top: 14px;}
+  /* Languages per Org manual */
+  pre.src-asymptote:before { content: 'Asymptote'; }
+  pre.src-awk:before { content: 'Awk'; }
+  pre.src-authinfo::before { content: 'Authinfo'; }
+  pre.src-C:before { content: 'C'; }
+  /* pre.src-C++ doesn't work in CSS */
+  pre.src-clojure:before { content: 'Clojure'; }
+  pre.src-css:before { content: 'CSS'; }
+  pre.src-D:before { content: 'D'; }
+  pre.src-ditaa:before { content: 'ditaa'; }
+  pre.src-dot:before { content: 'Graphviz'; }
+  pre.src-calc:before { content: 'Emacs Calc'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-fortran:before { content: 'Fortran'; }
+  pre.src-gnuplot:before { content: 'gnuplot'; }
+  pre.src-haskell:before { content: 'Haskell'; }
+  pre.src-hledger:before { content: 'hledger'; }
+  pre.src-java:before { content: 'Java'; }
+  pre.src-js:before { content: 'Javascript'; }
+  pre.src-latex:before { content: 'LaTeX'; }
+  pre.src-ledger:before { content: 'Ledger'; }
+  pre.src-lisp:before { content: 'Lisp'; }
+  pre.src-lilypond:before { content: 'Lilypond'; }
+  pre.src-lua:before { content: 'Lua'; }
+  pre.src-matlab:before { content: 'MATLAB'; }
+  pre.src-mscgen:before { content: 'Mscgen'; }
+  pre.src-ocaml:before { content: 'Objective Caml'; }
+  pre.src-octave:before { content: 'Octave'; }
+  pre.src-org:before { content: 'Org mode'; }
+  pre.src-oz:before { content: 'OZ'; }
+  pre.src-plantuml:before { content: 'Plantuml'; }
+  pre.src-processing:before { content: 'Processing.js'; }
+  pre.src-python:before { content: 'Python'; }
+  pre.src-R:before { content: 'R'; }
+  pre.src-ruby:before { content: 'Ruby'; }
+  pre.src-sass:before { content: 'Sass'; }
+  pre.src-scheme:before { content: 'Scheme'; }
+  pre.src-screen:before { content: 'Gnu Screen'; }
+  pre.src-sed:before { content: 'Sed'; }
+  pre.src-sh:before { content: 'shell'; }
+  pre.src-sql:before { content: 'SQL'; }
+  pre.src-sqlite:before { content: 'SQLite'; }
+  /* additional languages in org.el's org-babel-load-languages alist */
+  pre.src-forth:before { content: 'Forth'; }
+  pre.src-io:before { content: 'IO'; }
+  pre.src-J:before { content: 'J'; }
+  pre.src-makefile:before { content: 'Makefile'; }
+  pre.src-maxima:before { content: 'Maxima'; }
+  pre.src-perl:before { content: 'Perl'; }
+  pre.src-picolisp:before { content: 'Pico Lisp'; }
+  pre.src-scala:before { content: 'Scala'; }
+  pre.src-shell:before { content: 'Shell Script'; }
+  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
+  /* additional language identifiers per "defun org-babel-execute"
+       in ob-*.el */
+  pre.src-cpp:before  { content: 'C++'; }
+  pre.src-abc:before  { content: 'ABC'; }
+  pre.src-coq:before  { content: 'Coq'; }
+  pre.src-groovy:before  { content: 'Groovy'; }
+  /* additional language identifiers from org-babel-shell-names in
+     ob-shell.el: ob-shell is the only babel language using a lambda to put
+     the execution function name together. */
+  pre.src-bash:before  { content: 'bash'; }
+  pre.src-csh:before  { content: 'csh'; }
+  pre.src-ash:before  { content: 'ash'; }
+  pre.src-dash:before  { content: 'dash'; }
+  pre.src-ksh:before  { content: 'ksh'; }
+  pre.src-mksh:before  { content: 'mksh'; }
+  pre.src-posh:before  { content: 'posh'; }
+  /* Additional Emacs modes also supported by the LaTeX listings package */
+  pre.src-ada:before { content: 'Ada'; }
+  pre.src-asm:before { content: 'Assembler'; }
+  pre.src-caml:before { content: 'Caml'; }
+  pre.src-delphi:before { content: 'Delphi'; }
+  pre.src-html:before { content: 'HTML'; }
+  pre.src-idl:before { content: 'IDL'; }
+  pre.src-mercury:before { content: 'Mercury'; }
+  pre.src-metapost:before { content: 'MetaPost'; }
+  pre.src-modula-2:before { content: 'Modula-2'; }
+  pre.src-pascal:before { content: 'Pascal'; }
+  pre.src-ps:before { content: 'PostScript'; }
+  pre.src-prolog:before { content: 'Prolog'; }
+  pre.src-simula:before { content: 'Simula'; }
+  pre.src-tcl:before { content: 'tcl'; }
+  pre.src-tex:before { content: 'TeX'; }
+  pre.src-plain-tex:before { content: 'Plain TeX'; }
+  pre.src-verilog:before { content: 'Verilog'; }
+  pre.src-vhdl:before { content: 'VHDL'; }
+  pre.src-xml:before { content: 'XML'; }
+  pre.src-nxml:before { content: 'XML'; }
+  /* add a generic configuration mode; LaTeX export needs an additional
+     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
+  pre.src-conf:before { content: 'Configuration File'; }
+
+  table { border-collapse:collapse; }
+  caption.t-above { caption-side: top; }
+  caption.t-bottom { caption-side: bottom; }
+  td, th { vertical-align:top;  }
+  th.org-right  { text-align: center;  }
+  th.org-left   { text-align: center;   }
+  th.org-center { text-align: center; }
+  td.org-right  { text-align: right;  }
+  td.org-left   { text-align: left;   }
+  td.org-center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara { display: inline; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .equation-container {
+    display: table;
+    text-align: center;
+    width: 100%;
+  }
+  .equation {
+    vertical-align: middle;
+  }
+  .equation-label {
+    display: table-cell;
+    text-align: right;
+    vertical-align: middle;
+  }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  .org-svg { }
+</style>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Be careful when writing assembly</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org043d610">1. DEBUGGING</a>
+<ul>
+<li><a href="#orgfc68e9f">1.1. Be aware of non-volatile registers</a></li>
+<li><a href="#org9d5473e">1.2. Blame yourself before blaming your compiler</a>
+<ul>
+<li><a href="#orgad0adb5">1.2.1. suggestions</a></li>
+</ul>
+</li>
+<li><a href="#orgaf96097">1.3. setc, sete, setz, setb等</a></li>
+<li><a href="#org6aca54e">1.4. use gcc/clang extended assembly</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<p>
+<a href="./index.html">Back to index</a>
+</p>
+
+<p>
+最近在写一个用户态抢占式调度线程。这次想写细致和全面一些（基准性能 &amp;&amp; 支持异步IO）。一些原子操作我选择汇编实现，踩了一些坑，花了很长时间才定位到问题出在汇编代码上。
+</p>
+
+<div id="outline-container-org043d610" class="outline-2">
+<h2 id="org043d610"><span class="section-number-2">1.</span> DEBUGGING</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+当你遇到以下类似的BUG时，你很可能需要检查一下自己的汇编代码是否出错。
+</p>
+</div>
+<div id="outline-container-orgfc68e9f" class="outline-3">
+<h3 id="orgfc68e9f"><span class="section-number-3">1.1.</span> Be aware of non-volatile registers</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+根据System V AMD64 ABI, <code>%rbp</code>, <code>%rsp</code>, <code>%rbp</code>, <code>%rbx</code>, <code>%r12</code>, <code>%r13</code>, <code>%r14</code>, <code>%15</code> 是non-volatile registers(callee-saved)。 caller从called function中返回后，认为这些寄存器的值是不变的。 如果callee有涉及修改这些寄存器的操作，则它复制在函数开始/返回前保存和恢复这些寄存器的值。
+</p>
+
+<p>
+有时候，所写的汇编函数很短，不涉及栈上操作，很容易忽视以上规则。如以下函数：
+</p>
+<div class="org-src-container">
+<pre class="src src-assembly">// proto: u128 atomic_load_u128(u128* addr)
+atomic_load_u128:
+  movq %rax, %rbx
+  movq %rdx, %rcx
+  LOCK
+  cmpxchg16b (%rdi)
+  retq
+</pre>
+</div>
+<p>
+该函数原子地读取addr地址处的128bit(16B)数据。 <code>cmpxchg16b</code> 将 <code>(addr)</code> 和 <code>rdx:rax</code> 比较，若相等，将 <code>rcx:rbx</code> 存到 <code>(addr)</code> 处；否则，将 <code>(addr)</code> load到 <code>rdx:rax</code> 中。 因此，令 <code>rcx:rbx</code> 等于 <code>rdx:rax</code> ， <code>rdx:rax</code> 中肯定是 <code>(addr)</code> 处的值。
+</p>
+
+<p>
+这个函数错在 <code>movq %rax, %rbx</code> 修改了 <code>%rbx</code> 的值，而该函数并没有保存和恢复 <code>%rbx</code> 的原始值。
+</p>
+
+<p>
+在如下这段程序中，caller使用了 <code>%rbx</code> ，而atomic<sub>load</sub><sub>u128改变了它</sub>，导致程序出错。
+</p>
+
+
+<div id="orge22ba49" class="figure">
+<p><img src="./assets/asm/asm0.png" alt="asm0.png" width="850" />
+</p>
+</div>
+
+<p>
+另外，这是我之前的另一个函数，存在相同问题：
+</p>
+<div class="org-src-container">
+<pre class="src src-assembly">// int atomic_cas_u128(u128* addr, u128 old, u128 new)
+atomic_cas_u128:
+  movq %rsi, %rax
+  movq %rcx, %rbx
+  movq %r8, %rcx
+  LOCK
+  cmpxchg16b (%rdi)
+  sete %al
+  retq
+</pre>
+</div>
+
+<p>
+因此出现了如下错误：
+</p>
+
+
+<div id="org8c65880" class="figure">
+<p><img src="./assets/asm/asm1.jpg" alt="asm1.jpg" width="850" />
+</p>
+</div>
+
+<p>
+图中， <code>scq_push(scq_t *q, u64 val)</code> 传入的q是一个有效的指针，且scq_push没有对q做过任何修改，在执行到149行后，q变为了0x0，像幻觉一样。这是因为在 <code>movq %rcx, %rbx</code> 时，修改了 <code>rbx</code> ，而 <code>rcx</code> 存的是 <code>new.data=val=0</code> ，因此，在返回后，q变为了0。
+</p>
+
+<p>
+修改后的正确函数如下：
+</p>
+<div class="org-src-container">
+<pre class="src src-assembly">atomic_load_u128:
+  movq %rbx, %rax
+  movq %rcx, %rdx
+  LOCK
+  cmpxchg16b (%rdi)
+  retq
+
+atomic_cas_u128:
+  pushq   %rbx
+  movq    %rcx, %rbx
+  movq    %rsi, %rax
+  xorl    %esi, %esi
+  movq    %r8, %rcx
+  lock
+  cmpxchg16b      (%rdi)
+  sete    %sil
+  movl    %esi, %eax
+  popq    %rbx
+  retq
+</pre>
+</div>
+
+<p>
+对于第一个函数，我们把 <code>%rbx</code> mov到 <code>%rax</code> ，就不需要保存 <code>rbx</code> 了。
+</p>
+
+<p>
+对于第二个函数， <code>%rbx</code> 是一定会被修改的，我们需要在开始时将其保存到栈上，返回前再恢复。
+</p>
+
+<p>
+总结一下，这种missing会导致很多奇怪的错误。上面的例子只是其中一种。如果被修改的寄存器存的是某个变量的地址，在后续访问该变量时，程序可能会抛出SIGSEGV。如果存的是某个变量的值，那程序甚至不会抛出任何异常，只是你的代码的行为变为unexpected了。例如，如果上面 <code>rbx</code> 存的是val的值，那我可能一个月后也不会发现问题，因为仅仅是我的存入 <code>q-&gt;entries[j]</code> 的val是错误的。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org9d5473e" class="outline-3">
+<h3 id="org9d5473e"><span class="section-number-3">1.2.</span> Blame yourself before blaming your compiler</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+如果你没有在写操作栈帧的代码（如buffer overflow），或者直接操作指令寄存器的代码（如JIT），大量硬件层面的汇编代码、大量操作向量寄存器的代码等，那请相信你的编译器。
+</p>
+
+<p>
+很多时候，我们的代码在Debug模式（-O0）下运行“没有问题”（指没有报错，测试case通过），自信满满地开启Release模式（-O2或-O3）后，各种segmentation fault，freeing twice的错误、各种deadlock铺天盖地地袭来，然后开始责怪编译器做了奇怪甚至错误的激进优化。
+</p>
+
+<p>
+忘了在哪看到过一句话：
+</p>
+<blockquote>
+<p>
+When a bug goes away by disabling optimizations, most of the time, it's still your fault.
+</p>
+</blockquote>
+
+<p>
+拿上面的例子来说吧，原先的代码最初在关闭优化的情况下，我也没看到有异常抛出。这是为什么，明明rbx的值被修改了？
+</p>
+
+<p>
+我们找个简单的函数看一下-O0和-O3下生成的汇编代码的区别：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #228b22;">int</span> <span style="color: #ff0000;">add</span>(<span style="color: #228b22;">int</span> <span style="color: #a0522d;">a</span>, <span style="color: #228b22;">int</span> <span style="color: #a0522d;">b</span>){
+  <span style="color: #228b22;">int</span> <span style="color: #a0522d;">c</span> = a+b;
+  <span style="color: #228b22;">int</span> <span style="color: #a0522d;">d</span> = a-b;
+  <span style="color: #228b22;">int</span> <span style="color: #a0522d;">e</span> = d;
+  <span style="color: #228b22;">int</span> <span style="color: #a0522d;">f</span> = do_nothing(c, d, e, a);
+  <span style="color: #0000cd;">return</span> a;
+}
+</pre>
+</div>
+
+<div class="org-src-container">
+<pre class="src src-assembly">// -O0
+add:
+      pushq   %rbp
+      movq    %rsp, %rbp
+      subq    $32, %rsp
+      movl    %edi, -20(%rbp)
+      movl    %esi, -24(%rbp)
+      movl    -20(%rbp), %edx
+      movl    -24(%rbp), %eax
+      addl    %edx, %eax
+      movl    %eax, -4(%rbp)
+      movl    -20(%rbp), %eax
+      subl    -24(%rbp), %eax
+      movl    %eax, -8(%rbp)
+      movl    -8(%rbp), %eax
+      movl    %eax, -12(%rbp)
+      movl    -20(%rbp), %ecx
+      movl    -12(%rbp), %edx
+      movl    -8(%rbp), %esi
+      movl    -4(%rbp), %eax
+      movl    %eax, %edi
+      call    do_nothing
+      movl    %eax, -16(%rbp)
+      movl    -20(%rbp), %eax
+      leave
+      ret
+
+// -O3
+add:
+      pushq   %rbx
+      movl    %edi, %eax
+      movl    %edi, %ebx
+      leal    (%rdi,%rsi), %edi
+      subl    %esi, %eax
+      movl    %ebx, %ecx
+      movl    %eax, %edx
+      movl    %eax, %esi
+      call    do_nothing
+      movl    %ebx, %eax
+      popq    %rbx
+      ret
+</pre>
+</div>
+
+<p>
+可以看到，在-O0时，编译器主要在栈上分配局部变量。在-O3时，编译器会尽量使用寄存器存储局部变量。因此，在之前错误的代码中， <code>%rbx</code> 没有被caller用到，自然被callee修改也没有影响。
+</p>
+</div>
+
+<div id="outline-container-orgad0adb5" class="outline-4">
+<h4 id="orgad0adb5"><span class="section-number-4">1.2.1.</span> suggestions</h4>
+<div class="outline-text-4" id="text-1-2-1">
+<p>
+除了上述例子，一个在并发场景下经常会遇到的问题就是指令重排（re-ordering）。
+</p>
+
+<p>
+说一个我以前的经历，调试一个文件系统，Debug模式正常，切到-g -O2下不正常，一个我认为值应该改变了的变量，却没有变。加上printf打印该变量，又正常了。 删掉printf，用gdb打断点，也是正常的。
+</p>
+
+<p>
+最后发现其实在开启优化的条件下，编译器会将一些读写指令重排，如果你写的是多线程程序，这很可能导致你的程序运行进入一个不一致的状态。这要求你手动插入一些读写屏障（或内存栅栏），这个问题很复杂，涉及到内存模型、缓存一致性等内容，不同cpu指令集的内存模型的强弱是不一样的。
+</p>
+
+<p>
+基于指令集提供的保障内存序的指令，可以实现基本的原子操作，进而实现锁、信号量等各种同步原语。从内存屏障-&gt;原子操作-&gt;锁，同步的范围变大，但性能也越变越差。
+</p>
+
+<p>
+printf打印变量可能改变了生成的代码，gdb打断点可能会插入内存屏障，造成行为不一样，难以调试。
+</p>
+
+<p>
+但这不是编译器的BUG，而是程序的并发逻辑错误或者没有正确地同步共享变量。
+</p>
+
+<p>
+你可以选择使用内存屏障(如mfence，std::memory<sub>order</sub>)、原子操作(如gcc内置的_<sub>sync</sub>__)、锁（如spinlock，linux futex）等来同步你的线程对于共享变量的防卫。 从左到右序依次增强、同步逻辑依次简化，但开销也依次增大。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgaf96097" class="outline-3">
+<h3 id="orgaf96097"><span class="section-number-3">1.3.</span> setc, sete, setz, setb等</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+这几个指令会的目的寄存器是单字节的，如 <code>%al</code>, <code>%dil</code>, <code>%cl</code> ， 它们分别代表 <code>%rax</code> , <code>%rdi</code>, <code>%rcx</code> 的最低8位。
+</p>
+
+<p>
+如 <code>setz %al</code> 会根据状态寄存器的ZF标志位，将 <code>%al</code> 置1或置0。
+</p>
+
+<p>
+<b>但它不会影响rax的其它位</b>
+</p>
+
+<div class="org-src-container">
+<pre class="src src-assembly">// int atomic_bts_u64(u64* addr, u64 shift)
+atomic_bts_u64:
+  LOCK
+  btsq %rsi, (%rdi)
+  setc %al
+  retq
+</pre>
+</div>
+
+<p>
+上面的代码的意图是将(addr)的第shift位置1，并返回该位原先的值。
+</p>
+
+<p>
+但如果在调用前 <code>%eax</code> （int是低32位）的高24位非0，那返回值无论如何都大于0，直接拿它去做条件判断，都是true。
+</p>
+
+<p>
+因此在使用前应该将其置0
+</p>
+
+<div class="org-src-container">
+<pre class="src src-assembly">atomic_bts_u64:
+  xorl %eax, %eax
+  LOCK
+  btsq %rsi, (%rdi)
+  setc %al
+  retq
+</pre>
+</div>
+
+<p>
+置0的方法有多种，很多编译器选择xorl，因为对于源寄存器和目的寄存器相同的xorl，cpu有特殊优化。
+</p>
+
+<p>
+尽量不要在btsq/cmpxchg等指令之后才清零，因为这有可能改变状态寄存器的flag。
+</p>
+
+<p>
+但如果 <code>%rax</code> 被cmpxchg16这样的指令用到了，我们没法提前置0呢？那就需要再用一个临时的寄存器了，如：
+</p>
+
+<div class="org-src-container">
+<pre class="src src-assembly">// version 1
+atomic_cas_u128:
+  pushq   %rbx
+  movq    %rcx, %rbx
+  movq    %rsi, %rax
+  xorl    %esi, %esi  // zero
+  movq    %r8, %rcx
+  lock
+  cmpxchg16b      (%rdi)
+  sete    %sil
+  movl    %esi, %eax
+  popq    %rbx
+  retq
+
+// version2
+atomic_cas_u128:
+  pushq   %rbx
+  movq    %rcx, %rbx
+  movq    %rsi, %rax
+  movq    %r8, %rcx
+  lock
+  cmpxchg16b      (%rdi)
+  sete    %sil
+  movzbl  %sil, %eax // zero and move
+  popq    %rbx
+  retq
+</pre>
+</div>
+
+<p>
+version2的movzbl在mov前会将 <code>%eax</code> 置0。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6aca54e" class="outline-3">
+<h3 id="org6aca54e"><span class="section-number-3">1.4.</span> use gcc/clang extended assembly</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+纯手写的汇编没有给编译器留下优化的空间，还有可能存在潜在bug（如不遵守calling convention），如果可以，尽量使用gcc/clang的内联汇编。
+</p>
+
+<p>
+<a href="https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html">https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html</a>
+</p>
+
+<p>
+不过还是有一些细节需要留意。
+</p>
+
+<p>
+看一个case:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #0000cd;">typedef</span> <span style="color: #0000cd;">struct</span> {
+    <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">long</span> <span style="color: #a0522d;">flag</span>;
+    <span style="color: #228b22;">unsigned</span> <span style="color: #228b22;">long</span> <span style="color: #a0522d;">data</span>;
+} <span style="color: #228b22;">u128</span>;
+
+<span style="color: #228b22;">int</span> <span style="color: #ff0000;">atomic_cas_u128</span>(<span style="color: #228b22;">u128</span> *<span style="color: #a0522d;">addr</span>, <span style="color: #228b22;">u128</span> <span style="color: #a0522d;">old</span>, <span style="color: #228b22;">u128</span> <span style="color: #a0522d;">new</span>){
+    <span style="color: #228b22;">int</span> <span style="color: #a0522d;">ret</span> = 0;
+    <span style="color: #0000cd;">asm</span> (
+        <span style="color: #8b008b;">"LOCK\n\t"</span>
+        <span style="color: #8b008b;">"cmpxchg16b %1\n\t"</span>
+        <span style="color: #8b008b;">"sete %b0\n"</span>
+        :<span style="color: #8b008b;">"+r"</span>(ret), <span style="color: #8b008b;">"+m"</span>(*addr)
+        :<span style="color: #8b008b;">"d"</span>(old.data), <span style="color: #8b008b;">"a"</span>(old.flag), <span style="color: #8b008b;">"c"</span>(new.data), <span style="color: #8b008b;">"b"</span>(new.flag)
+        :<span style="color: #8b008b;">"memory"</span>
+    );
+    <span style="color: #0000cd;">return</span> ret;
+}
+</pre>
+</div>
+
+<p>
+比较关键的有两点：
+</p>
+<ol class="org-ol">
+<li>初始化ret=0 以及 <code>"+r"(ret)</code> 中的＋是必须的。 这告诉编译器，ret是作为值为0的变量输入到asm块中的，因此在 <code>sete %b0</code> 时，会意识到应该先将临时保存ret的寄存器清0。</li>
+<li><code>sete %b0</code> 的b代表使用寄存器的低8位。在gcc上，不加b可以生成汇编代码，但在生成.o二进制文件时会报错，因为sete的操作寄存器应该是8位的。 在clang上会显式报错。</li>
+</ol>
+
+<p>
+clang15 -O3生成的汇编：
+</p>
+<div class="org-src-container">
+<pre class="src src-x86asm">atomic_cas_u128:                        # @atomic_cas_u128
+      pushq   %rbx
+      movq    %rcx, %rbx
+      movq    %rsi, %rax
+      xorl    %esi, %esi
+      movq    %r8, %rcx
+      lock
+      cmpxchg16b      (%rdi)
+      sete    %sil
+
+      movl    %esi, %eax
+      popq    %rbx
+      retq
+</pre>
+</div>
+
+<p>
+可以看到只要写对了输入、输出变量和正确的约束，编译器会帮我们处理好calling convention，在sete前清零寄存器等。
+</p>
+
+<p>
+可以在此对比：<a href="https://godbolt.org/z/beK7raooq">https://godbolt.org/z/beK7raooq</a>
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: 于承业</p>
+<p class="date">Created: 2023-01-21 Sat 22:27</p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

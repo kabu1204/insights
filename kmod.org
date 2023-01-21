@@ -1,0 +1,5 @@
+#+include: back.org
+#+TITLE: [Gained Knowledge] Kernel module programming and debugging
+
+* Intro
+Recently, I've been learning linux kernel source code and writing some kernel modules. Kernel is a giant software providing interface between user code and hardware (memory management, filesystem, context switch, etc.). Coding in kernel space is quite different from writing user space code(memory allocation, disk I/O, testing and debugging). I'd like to record some of my gains in learning here, starting from what is a kernel module and how to develop a kernel module(coding and debugging).
