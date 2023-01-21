@@ -5,7 +5,7 @@
 * Humble Room on Mt. Takao
 This github pages is a site to publish some of my ideas. There used to be a blog, unfortunately due to some trivials, it had been shutdown. I'll put on my new articles here and try to re-upload some of my articles written in the past. 
 ** About me
-I'm a SCUT undergraduate majored in CS. And I'm going to study for my PhD degree in HK this fall. I'm interested in system design and implementation, like OS and DBMS.
+I'm a SCUT undergraduate majored in CS. And I'm going to study for my PhD degree in CUHK this fall. I'm interested in system design and implementation, like OS and DBMS.
 I'm short of knowledge but still insisting on learning. 
 ** Index
 1. [[./lisparse/lisparse.html][Enum of Rust used in Lisp interpreter]]
