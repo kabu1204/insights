@@ -1,26 +1,26 @@
 
 # Table of Contents
 
-1.  [DEBUGGING](#org3e87c00)
-    1.  [Be aware of non-volatile registers](#orgf41438a)
-    2.  [Blame yourself before blaming your compiler](#org2b203e8)
-        1.  [suggestions](#org60989ba)
-    3.  [setc, sete, setz, setb等](#org80ac64c)
-    4.  [use gcc/clang extended assembly](#orga122a43)
+1.  [DEBUGGING](#org7b4a392)
+    1.  [Be aware of non-volatile registers](#org7f916bc)
+    2.  [Blame yourself before blaming your compiler](#orgd2913a3)
+        1.  [suggestions](#org4fcd4ea)
+    3.  [setc, sete, setz, setb等](#orgb2b1047)
+    4.  [use gcc/clang extended assembly](#orgca1b21e)
 
 [Back to index](./index.html)
 
 最近在写一个用户态抢占式调度线程。这次想写细致和全面一些（基准性能 && 支持异步IO）。一些原子操作我选择汇编实现，踩了一些坑，花了很长时间才定位到问题出在汇编代码上。
 
 
-<a id="org3e87c00"></a>
+<a id="org7b4a392"></a>
 
 # DEBUGGING
 
 当你遇到以下类似的BUG时，你很可能需要检查一下自己的汇编代码是否出错。
 
 
-<a id="orgf41438a"></a>
+<a id="org7f916bc"></a>
 
 ## Be aware of non-volatile registers
 
@@ -91,7 +91,7 @@
 总结一下，这种missing会导致很多奇怪的错误。上面的例子只是其中一种。如果被修改的寄存器存的是某个变量的地址，在后续访问该变量时，程序可能会抛出SIGSEGV。如果存的是某个变量的值，那程序甚至不会抛出任何异常，只是你的代码的行为变为unexpected了。例如，如果上面 `rbx` 存的是val的值，那我可能一个月后也不会发现问题，因为仅仅是我的存入 `q->entries[j]` 的val是错误的。
 
 
-<a id="org2b203e8"></a>
+<a id="orgd2913a3"></a>
 
 ## Blame yourself before blaming your compiler
 
@@ -160,7 +160,7 @@
 可以看到，在-O0时，编译器主要在栈上分配局部变量。在-O3时，编译器会尽量使用寄存器存储局部变量。因此，在之前错误的代码中， `%rbx` 没有被caller用到，自然被callee修改也没有影响。
 
 
-<a id="org60989ba"></a>
+<a id="org4fcd4ea"></a>
 
 ### suggestions
 
@@ -176,10 +176,10 @@ printf打印变量可能改变了生成的代码，gdb打断点可能会插入�
 
 但这不是编译器的BUG，而是程序的并发逻辑错误或者没有正确地同步共享变量。
 
-你可以选择使用内存屏障(如mfence，std::memory<sub>order</sub>)、原子操作(如gcc内置的\_<sub>sync</sub>\_\_)、锁（如spinlock，linux futex）等来同步你的线程对于共享变量的防卫。 从左到右序依次增强、同步逻辑依次简化，但开销也依次增大。
+你可以选择使用内存屏障(如mfence，std::memory<sub>order</sub>)、原子操作(如gcc内置的\_<sub>sync</sub>\_\_)、锁（如spinlock，linux futex）等来同步你的线程对于共享变量的访问。 从左到右序依次增强、同步逻辑依次简化，但开销也依次增大。
 
 
-<a id="org80ac64c"></a>
+<a id="orgb2b1047"></a>
 
 ## setc, sete, setz, setb等
 
@@ -245,7 +245,7 @@ printf打印变量可能改变了生成的代码，gdb打断点可能会插入�
 version2的movzbl在mov前会将 `%eax` 置0。
 
 
-<a id="orga122a43"></a>
+<a id="orgca1b21e"></a>
 
 ## use gcc/clang extended assembly
 

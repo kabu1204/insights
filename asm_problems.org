@@ -159,7 +159,7 @@ printf打印变量可能改变了生成的代码，gdb打断点可能会插入�
 
 但这不是编译器的BUG，而是程序的并发逻辑错误或者没有正确地同步共享变量。
 
-你可以选择使用内存屏障(如mfence，std::memory_order)、原子操作(如gcc内置的__sync__)、锁（如spinlock，linux futex）等来同步你的线程对于共享变量的防卫。 从左到右序依次增强、同步逻辑依次简化，但开销也依次增大。
+你可以选择使用内存屏障(如mfence，std::memory_order)、原子操作(如gcc内置的__sync__)、锁（如spinlock，linux futex）等来同步你的线程对于共享变量的访问。 从左到右序依次增强、同步逻辑依次简化，但开销也依次增大。
 
 ** setc, sete, setz, setb等
 这几个指令会的目的寄存器是单字节的，如 =%al=, =%dil=, =%cl= ， 它们分别代表 =%rax= , =%rdi=, =%rcx= 的最低8位。
