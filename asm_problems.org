@@ -6,7 +6,7 @@
 * DEBUGGING
 当你遇到以下类似的BUG时，你很可能需要检查一下自己的汇编代码是否出错。
 ** Be aware of non-volatile registers
-根据System V AMD64 ABI, =%rbp=, =%rsp=, =%rbp=, =%rbx=, =%r12=, =%r13=, =%r14=, =%15= 是non-volatile registers(callee-saved)。 caller从called function中返回后，认为这些寄存器的值是不变的。 如果callee有涉及修改这些寄存器的操作，则它复制在函数开始/返回前保存和恢复这些寄存器的值。
+根据System V AMD64 ABI, =%rbp=, =%rsp=, =%rbp=, =%rbx=, =%r12=, =%r13=, =%r14=, =%15= 是non-volatile registers(callee-saved)。 caller从called function中返回后，认为这些寄存器的值是不变的。 如果callee有涉及修改这些寄存器的操作，则它负责在函数开始/返回前保存和恢复这些寄存器的值。
 
 有时候，所写的汇编函数很短，不涉及栈上操作，很容易忽视以上规则。如以下函数：
 #+begin_src assembly
@@ -149,7 +149,7 @@ When a bug goes away by disabling optimizations, most of the time, it's still yo
 *** suggestions
 除了上述例子，一个在并发场景下经常会遇到的问题就是指令重排（re-ordering）。
 
-说一个我以前的经历，调试一个文件系统，Debug模式正常，切到-g -O2下不正常，一个我认为值应该改变了的变量，却没有变。加上printf打印该变量，又正常了。 删掉printf，用gdb打断点，也是正常的。
+说一个我以前的经历，调试一个文件系统，Debug模式下正常，切到-g -O2下不正常，一个我认为值应该改变了的变量，却没有变。加上printf打印该变量，又正常了。 删掉printf，用gdb打断点，也是正常的。
 
 最后发现其实在开启优化的条件下，编译器会将一些读写指令重排，如果你写的是多线程程序，这很可能导致你的程序运行进入一个不一致的状态。这要求你手动插入一些读写屏障（或内存栅栏），这个问题很复杂，涉及到内存模型、缓存一致性等内容，不同cpu指令集的内存模型的强弱是不一样的。
 
