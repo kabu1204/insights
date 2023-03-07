@@ -17,5 +17,6 @@ I'm short of knowledge but still insisting on learning.
 7. [[./ali.html][阿里-淘系技术部-C++研发工程师实习面经（HR面被释放）]]
 8. [[./lscq.html][一次提给Bytedance/gopkg:lscq的PR（增加arm64支持）的合并历程]]
 9. [[./asm_problems.html][Be careful when writing assembly]]
+10. [[./wt10661.html][给WiredTiger(MongoDB)提了个build bugfix]]
 ** Schedules
 My Schedules:[[./agenda.html][agenda]]
