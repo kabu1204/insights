@@ -1,0 +1,132 @@
+#+SETUPFILE: ./latexcss/latexcss.theme
+#+OPTIONS: ^:nil
+#+INCLUDE: back.org
+#+TITLE: 给WiredTiger(MongoDB)提了个build bugfix
+
+* 起因
+最近在Windows上测试RocksDB和WiredTiger的基准性能，build过程比较曲折，先是写了个wiredtiger-11.1.0的vcpkg的port([[https://github.com/kabu1204/wiredtiger-vcpkg][kabu1204/wiredtiger-vcpkg]])，然后给YCSB-cpp加了[[https://github.com/ls4154/YCSB-cpp/pull/9][win64和wiredtiger支持]]。
+做这些的目的是想着组里以后做相关实验时，环境配置更方便一些，因此我在每个commit、每个PR上都附上了详细的说明。本来做完这些已经足够了，至少过去很久我也可以照着当初写的README可以很快地装好所有环境，对每处改动只要看commit message就能完全理解意图。
+本着开源精神，还是先试探性地给MongoDB Jira提了个issue（[[https://jira.mongodb.org/browse/WT-10661][[WT-10661] builtin compressors on windows]]），并附上了我的建议修改。没想到社区的人回复很快，并且assignee在简单测试后鼓励我提PR。之后在正规测试和code review后，很快便合并了。尽管只是个小的build bug，他们的态度让我对mongodb这个社区好感度++。现在只是个还在学习的菜鸟，期待以后有机会更多地参与其中，我很乐意为这样的社区贡献精力。
+
+* 关于Windows上的DLL
+Windows和POSIX的dynamic library有一定区别。
+POSIX的.so<.x.y.z>是共享库，可以动态链接。有两种方式，一是编译时指定链接库（包含库的头文件并且 =-L <path> -l<libxxx.so>= ）；二是使用dl库，在运行时加载库函数，无需编译时指定链接库位置，也不用包含库头文件，但开发者自己需要知道函数原型。
+
+#+begin_src c
+  #include "dlfcn.h"
+  typedef int (*add_fn_t)(int, int);
+  void main(){
+      void *libadd = dlopen("./libadd.so",RTLD_LAZY);
+      add_fn_t add = (add_fn_t)dlsym(libadd, "add");
+      add(1, 2);
+  }
+#+end_src
+
+Windows的静态库只有一个.lib文件，包含位置信息和函数实现。
+
+Windows的动态库由两部分组成，.lib和.dll文件：
+ - .lib文件描述了函数在.dll中的位置信息，本身不包含实现。
+ - .dll文件包含了函数实现。
+
+如果我们想编译时指定动态链接库，则需要告知编译器.lib文件的位置。在函数运行时会去加载对应的.dll文件中的符号实现。
+
+也可以用LoadLibrary在windows上运行时再加载动态库，和POSIX的dlopen类似。这时只需要.dll文件。
+
+* WiredTiger的三方库
+
+WiredTiger是MongoDB的底层存储引擎，它有一些cmake选项，可以链接第三方库（如一些压缩算法库lz4,snappy,zstd,zlib等）。
+
+这些三方库在 =cmake/configs/auto.cmake= 中通过cmake的find_library函数引入。而后在 =cmake/third_party/<name>.cmake= 中IMPORT为 =wt::<name>= ：
+#+begin_src cmake
+ add_library(wt::lz4 SHARED IMPORTED GLOBAL)
+ set_target_properties(wt::lz4 PROPERTIES
+     IMPORTED_LOCATION ${HAVE_LIBLZ4}
+ )
+#+end_src
+
+其中 =${HAVE_LIBLZ4}= 就是find_library(lz4)找到的lz4动态库的.lib文件的位置。
+而对于一个 =IMPORTED SHARED= 库，在POSIX上，我们需要指定 =IMPORTED_LOCATION= 为.so文件的位置。在Windows上，我们需要指定 =IMPORTED_IMPLIB= 为.lib文件的位置：
+#+begin_quote
+For a SHARED library on Windows, the IMPORTED_IMPLIB target property (or its per-configuration variant IMPORTED_IMPLIB_<CONFIG>) specifies the location of the DLL import library file (.lib or .dll.a) on disk, and the IMPORTED_LOCATION is the location of the .dll runtime library (and is optional, but needed by the TARGET_RUNTIME_DLLS generator expression).
+#+end_quote
+
+因此这两个属性不会同时被使用到（起码在wiredtiger中，TARGET_RUNTIME_DLLS没有用到），因此我们将他们都设为 =${HAVE_LIBLZ4}= 就可以了。
+
+所以这就是本次bugfix的内容：https://github.com/wiredtiger/wiredtiger/pull/8873
+
+* 其它修改
+这两处额外的修改主要是为了正确通过vcpkg构建wiredtiger。其实算不上bug，因此也没有提issue。
+** detect zlib on windows
+=cmake/configs/auto.cmake= 查找zlib时使用的名字是z，在POSIX上会去搜索libz.*，在Windows上会搜索z.lib，然而zlib在Windows上的库文件一般叫zlib.lib：
+#+begin_src patch
+diff --git a/cmake/configs/auto.cmake b/cmake/configs/auto.cmake
+index ac8776989..98c4a014e 100644
+--- a/cmake/configs/auto.cmake
++++ b/cmake/configs/auto.cmake
+@@ -256,12 +256,21 @@ config_lib(
+     HEADER "snappy.h"
+ )
+ 
+-config_lib(
+-    HAVE_LIBZ
+-    "zlib library exists."
+-    LIB "z"
+-    HEADER "zlib.h"
+-)
++if(MSVC AND "${WT_OS}" STREQUAL "windows")
++    config_lib(
++        HAVE_LIBZ
++        "zlib library exists."
++        LIB "zlib"
++        HEADER "zlib.h"
++    )
++else()
++    config_lib(
++        HAVE_LIBZ
++        "zlib library exists."
++        LIB "z"
++        HEADER "zlib.h"
++    )
++endif()
+#+end_src
+
+其实可以通过在环境变量里指定Z_DIR来解决，所以算不上bug。为了方便vcpkg构建，我还是加了这个patch。
+
+** link debug CRT
+CRT是Windows提供的C运行时函数库（包括malloc,printf等）。
+通过/MD可以链接msvcrt.lib，是crt的动态链接库版本。
+通过/MT可以连接libcmt.lib，是crt的静态库版本。
+通过/MDd可以连接msvcrtd.lib，是crt的动态链接库版本，但带有debug info。
+同理/MTd。
+
+但是wiredtiger的 =cmake/configs/base.cmake= 指定在任何模式下都链接release版本。这样做没问题，一般也没人去debug标准库。但是坑爹的是vcpkg在构建完一个包后会检查你的CRT是否正确连接了Release/Debug版本，所以还是加了这个patch。
+
+#+begin_src patch
+diff --git a/cmake/configs/base.cmake b/cmake/configs/base.cmake
+index a8ca7681f..ef876b7ab 100644
+--- a/cmake/configs/base.cmake
++++ b/cmake/configs/base.cmake
+@@ -362,9 +362,17 @@ if(WT_WIN)
+     # Check if we a using the dynamic or static run-time library.
+     if(DYNAMIC_CRT)
+         # Use the multithread-specific and DLL-specific version of the run-time library (MSVCRT.lib).
+-        add_compile_options(/MD)
++        if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
++            add_compile_options(/MDd)
++        else()
++            add_compile_options(/MD)
++        endif()
+     else()
+         # Use the multithread, static version of the run-time library.
+-        add_compile_options(/MT)
++        if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
++            add_compile_options(/MTd)
++        else()
++            add_compile_options(/MT)
++        endif()
+     endif()
+ endif()
+#+end_src
+
+* 在Windows上编译安装WiredTiger
+[[https://github.com/kabu1204/wiredtiger-vcpkg]]
