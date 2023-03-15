@@ -1,3 +1,6 @@
 #+OPTIONS: html-style:nil
+#+INFOJS_OPT: view:info
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="latexcss/latexcss.css" />
-#+HTML_HEAD_EXTRA: <link rel="alternate stylesheet" type="latexcss/latexcss.css" />
+#+HTML_HEAD_EXTRA: <link rel="alternate stylesheet" type="https://orgmode.org/resources/style/org-demo.min.css" />
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="../latexcss/latexcss.css" />
+#+HTML_HEAD_EXTRA: <link rel="alternate stylesheet" type="../latexcss/latexcss.css" />

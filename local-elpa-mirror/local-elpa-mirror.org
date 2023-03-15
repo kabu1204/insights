@@ -1,4 +1,5 @@
 #+include: ../back.org
+#+SETUPFILE: ../latexcss/latexcss.theme
 #+TITLE: Local elpa mirror
 
 * Local elpa mirror
@@ -26,16 +27,15 @@ There is rich functions with rsync, for this article, we only use:
 | MELPA    | rsync://melpa.org/packages/                |
 | TUNA     | rsync://mirrors.tuna.tsinghua.edu.cn/elpa/ |
 
-#+ATTR_HTML: :width 50%
 [[file:assets/0.png]]
 
 The shell will be blocked and the synchronization has started, wait patiently until the sync finished. You can see in the router, rsync is downloading files from the server:
-#+ATTR_HTML: :width 50%
+
 [[file:assets/1.png]]
 
 ** Thin
 You may find the size of the mapping folder much bigger than 1GB:
-#+ATTR_HTML: :width 50%
+
 [[file:assets/2.png]]
 
 This is because rsync download this =.git= at the same time.
@@ -47,7 +47,7 @@ You can do this to thin the folder:
 #+end_src
 
 after thinning:
-#+ATTR_HTML: :width 50%
+
 [[file:assets/3.png]]
 
 Or, you can simply delete =.git= or exclude =.git= folder when rsyncing:
@@ -93,7 +93,6 @@ Check the LAN address of Ras-Pi (192.168.2.158 here), edit =~/.emacs.d/init.el= 
 #+end_src
 
 *** Effect
-#+ATTR_HTML: :width 50%
 [[file:assets/4.png]]
 
 You can write a shell that periodically rsync from server.

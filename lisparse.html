@@ -3,14 +3,14 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-12-03 Fri 16:57 -->
+<!-- 2023-03-15 Wed 15:39 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>&lrm;</title>
-<meta name="generator" content="Org mode" />
 <meta name="author" content="于承业" />
-<style type="text/css">
- <!--/*--><![CDATA[/*><!--*/
+<meta name="generator" content="Org Mode" />
+<style>
+  #content { max-width: 60em; margin: auto; }
   .title  { text-align: center;
              margin-bottom: .2em; }
   .subtitle { text-align: center;
@@ -31,8 +31,9 @@
   #postamble p, #preamble p { font-size: 90%; margin: .2em; }
   p.verse { margin-left: 3%; }
   pre {
-    border: 1px solid #ccc;
-    box-shadow: 3px 3px 3px #eee;
+    border: 1px solid #e6e6e6;
+    border-radius: 3px;
+    background-color: #f2f2f2;
     padding: 8pt;
     font-family: monospace;
     overflow: auto;
@@ -41,21 +42,21 @@
   pre.src {
     position: relative;
     overflow: auto;
-    padding-top: 1.2em;
   }
   pre.src:before {
     display: none;
     position: absolute;
-    background-color: white;
-    top: -10px;
-    right: 10px;
+    top: -8px;
+    right: 12px;
     padding: 3px;
-    border: 1px solid black;
+    color: #555;
+    background-color: #f2f2f299;
   }
   pre.src:hover:before { display: inline; margin-top: 14px;}
   /* Languages per Org manual */
   pre.src-asymptote:before { content: 'Asymptote'; }
   pre.src-awk:before { content: 'Awk'; }
+  pre.src-authinfo::before { content: 'Authinfo'; }
   pre.src-C:before { content: 'C'; }
   /* pre.src-C++ doesn't work in CSS */
   pre.src-clojure:before { content: 'Clojure'; }
@@ -190,44 +191,21 @@
     { font-size: 10px; font-weight: bold; white-space: nowrap; }
   .org-info-js_search-highlight
     { background-color: #ffff00; color: #000000; font-weight: bold; }
-  .org-svg { width: 90%; }
-  /*]]>*/-->
+  .org-svg { }
 </style>
-<script type="text/javascript">
-// @license magnet:?xt=urn:btih:e95b018ef3580986a04669f1b5879592219e2a7a&dn=public-domain.txt Public Domain
-<!--/*--><![CDATA[/*><!--*/
-     function CodeHighlightOn(elem, id)
-     {
-       var target = document.getElementById(id);
-       if(null != target) {
-         elem.classList.add("code-highlighted");
-         target.classList.add("code-highlighted");
-       }
-     }
-     function CodeHighlightOff(elem, id)
-     {
-       var target = document.getElementById(id);
-       if(null != target) {
-         elem.classList.remove("code-highlighted");
-         target.classList.remove("code-highlighted");
-       }
-     }
-    /*]]>*///-->
-// @license-end
-</script>
 </head>
 <body>
-<div id="content">
-<div id="table-of-contents">
+<div id="content" class="content">
+<div id="table-of-contents" role="doc-toc">
 <h2>Table of Contents</h2>
-<div id="text-table-of-contents">
+<div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org23b5453">1. Rust的枚举类型和模式匹配在解释器泛型中的运用</a>
+<li><a href="#orgc51313d">1. Rust的枚举类型和模式匹配在解释器泛型中的运用</a>
 <ul>
-<li><a href="#org078fa5e">1.1. Problems</a>
+<li><a href="#orgb67b090">1.1. Problems</a>
 <ul>
-<li><a href="#org3fa45f3">1.1.1. Generic type</a></li>
-<li><a href="#orgd0df400">1.1.2. Nested sub-expression</a></li>
+<li><a href="#org3c5f6c5">1.1.1. Generic type</a></li>
+<li><a href="#org116865e">1.1.2. Nested sub-expression</a></li>
 </ul>
 </li>
 </ul>
@@ -235,23 +213,28 @@
 </ul>
 </div>
 </div>
-<div id="outline-container-org23b5453" class="outline-2">
-<h2 id="org23b5453"><span class="section-number-2">1</span> Rust的枚举类型和模式匹配在解释器泛型中的运用</h2>
+<p>
+<a href="./index.html">Back to index</a>
+#+TITLE Rust的枚举类型和模式匹配在解释器泛型中的运用
+</p>
+
+<div id="outline-container-orgc51313d" class="outline-2">
+<h2 id="orgc51313d"><span class="section-number-2">1.</span> Rust的枚举类型和模式匹配在解释器泛型中的运用</h2>
 <div class="outline-text-2" id="text-1">
 </div>
-<div id="outline-container-org078fa5e" class="outline-3">
-<h3 id="org078fa5e"><span class="section-number-3">1.1</span> Problems</h3>
+<div id="outline-container-orgb67b090" class="outline-3">
+<h3 id="orgb67b090"><span class="section-number-3">1.1.</span> Problems</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 在实现解释器时（无论是JSON还是Lisp等），一个必须要考虑的问题是多种类型的如何处理、以及嵌套子表达式应该如何表示。
 下面谈一谈我在用C++和Rust处理这两个问题时的感慨
 </p>
 </div>
-<div id="outline-container-org3fa45f3" class="outline-4">
-<h4 id="org3fa45f3"><span class="section-number-4">1.1.1</span> Generic type</h4>
+<div id="outline-container-org3c5f6c5" class="outline-4">
+<h4 id="org3c5f6c5"><span class="section-number-4">1.1.1.</span> Generic type</h4>
 <div class="outline-text-4" id="text-1-1-1">
 <p>
-<a id="org2d0965f"></a>
+<a id="org92b50ca"></a>
 </p>
 <div class="org-src-container">
 <pre class="src src-cpp"><span style="color: #0000cd;">using</span> <span style="color: #228b22;">i32</span> = uint32_t;
@@ -280,7 +263,7 @@ assert(a.get&lt;<span style="color: #228b22;">f64</span>&gt;()==3.14);
 <p>
 以上是我在<a href="https://github.com/kabu1204/ILisp">ILisp</a>中的实现：使用 <b><b>type</b></b> 来记录所存储值的类型；使用 <b><b>union</b></b> 存储数据来使用尽量少的空间。这种方式是权衡后的选择。在取值的时候虚要根据type判断get&lt;&gt;()的类型。而且虽然在C++11之后，union可以存储非POD类型的数据了，但是对std::string的支持依然不是很好。导致我只能存储i32和f64两种简单的类型。
 相比之下，Rust的枚举类型在应对这种场景时显得更加得心应手：
-<a id="org703789d"></a>
+<a id="orgd4230cf"></a>
 </p>
 <div class="org-src-container">
 <pre class="src src-rust"><span style="color: #b35caf;">#[derive(Debug, Clone)]</span>
@@ -325,11 +308,11 @@ assert(a.get&lt;<span style="color: #228b22;">f64</span>&gt;()==3.14);
 </ol>
 </div>
 </div>
-<div id="outline-container-orgd0df400" class="outline-4">
-<h4 id="orgd0df400"><span class="section-number-4">1.1.2</span> Nested sub-expression</h4>
+<div id="outline-container-org116865e" class="outline-4">
+<h4 id="org116865e"><span class="section-number-4">1.1.2.</span> Nested sub-expression</h4>
 <div class="outline-text-4" id="text-1-1-2">
 <p>
-对比上面的代码(<a href="#org2d0965f">cpp</a> <a href="#org703789d">rust</a>)：
+对比上面的代码(<a href="#org92b50ca">cpp</a> <a href="#orgd4230cf">rust</a>)：
 </p>
 <ol class="org-ol">
 <li>在c++实现中，我没有将类似vector&lt;Value&gt;的结构放在结构体Value的定义中，因为我觉得这使得Value的体积过于膨胀了，一个值类型应该是 <b><b>简洁</b></b> 。
@@ -343,7 +326,7 @@ assert(a.get&lt;<span style="color: #228b22;">f64</span>&gt;()==3.14);
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: 于承业</p>
-<p class="date">Created: 2021-12-03 Fri 16:57</p>
+<p class="date">Created: 2023-03-15 Wed 15:39</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

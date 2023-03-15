@@ -1,18 +1,37 @@
 #+include: back.org
 #+TITLE: Schedules
-* Here is a list of my want-todo
+#+SETUPFILE: latexcss/latexcss.theme
+
+* Here is my TODO list
+** DBMS
+*** TODO implement WiscKey on leveldb
+- [X] read leveldb source code
+- [ ] value log
+  - [ ] write buffer
+  - [ ] garbage collection
+
+*** TODO Classic BTree implementation
+- [ ] LMDB source code
+- [ ] WiredTiger btree
+  
 ** Rust
-*** JACKING IN Better Lisp interpretre
+*** DONE Better Lisp interpretre
+- State "DONE"       from "JACKING IN" [2023-03-15 Wed 15:30] \\
+  see rlisp
 - [X] Mininal impl(same as ILisp)
 - [X] quote/setq/lambda
 - [ ] complex types
 *** TODO LC-3 Arch Virtual Machine
-*** TODO Chip-8 Emulator
+*** DEPRECATED Chip-8 Emulator
+- State "DEPRECATED" from "TODO"       [2023-03-15 Wed 15:30]
 ** C++
-*** JACKING IN Joblib(async/await)
+*** DEPRECATED Joblib(async/await)
+- State "DEPRECATED" from "JACKING IN" [2023-03-15 Wed 15:31]
 - [X] Stackless & Stackful coroutine
 - [ ] Multi-thread scheduling
 - [ ] asyncio
+
+  see pco
 *** DONE Mininal Lisp interpreter
 - State "DONE"       from "DONE"       [2021-12-04 Sat 02:03] \\
   Git repo: [[https://github.com/kabu1204/ILisp][ILisp]]

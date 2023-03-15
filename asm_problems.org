@@ -1,5 +1,6 @@
 #+TITLE: Be careful when writing assembly
 #+INCLUDE: back.org
+#+SETUPFILE: latexcss/latexcss.theme
 
 最近在写一个用户态抢占式调度线程。这次想写细致和全面一些（基准性能 && 支持异步IO）。一些原子操作我选择汇编实现，踩了一些坑，花了很长时间才定位到问题出在汇编代码上。
 

@@ -1,8 +1,10 @@
 *.tex
-**/*.tex
 *~
-**/*~
 .DS_Store
 *.aux
-**/.aux
 _mint*
+*#
+.DS_Store
+*.md
+*.pdf
+

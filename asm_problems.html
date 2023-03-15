@@ -3,196 +3,35 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2023-01-21 Sat 23:14 -->
+<!-- 2023-03-15 Wed 15:29 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Be careful when writing assembly</title>
 <meta name="author" content="于承业" />
 <meta name="generator" content="Org Mode" />
-<style>
-  #content { max-width: 60em; margin: auto; }
-  .title  { text-align: center;
-             margin-bottom: .2em; }
-  .subtitle { text-align: center;
-              font-size: medium;
-              font-weight: bold;
-              margin-top:0; }
-  .todo   { font-family: monospace; color: red; }
-  .done   { font-family: monospace; color: green; }
-  .priority { font-family: monospace; color: orange; }
-  .tag    { background-color: #eee; font-family: monospace;
-            padding: 2px; font-size: 80%; font-weight: normal; }
-  .timestamp { color: #bebebe; }
-  .timestamp-kwd { color: #5f9ea0; }
-  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
-  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
-  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
-  .underline { text-decoration: underline; }
-  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
-  p.verse { margin-left: 3%; }
-  pre {
-    border: 1px solid #e6e6e6;
-    border-radius: 3px;
-    background-color: #f2f2f2;
-    padding: 8pt;
-    font-family: monospace;
-    overflow: auto;
-    margin: 1.2em;
-  }
-  pre.src {
-    position: relative;
-    overflow: auto;
-  }
-  pre.src:before {
-    display: none;
-    position: absolute;
-    top: -8px;
-    right: 12px;
-    padding: 3px;
-    color: #555;
-    background-color: #f2f2f299;
-  }
-  pre.src:hover:before { display: inline; margin-top: 14px;}
-  /* Languages per Org manual */
-  pre.src-asymptote:before { content: 'Asymptote'; }
-  pre.src-awk:before { content: 'Awk'; }
-  pre.src-authinfo::before { content: 'Authinfo'; }
-  pre.src-C:before { content: 'C'; }
-  /* pre.src-C++ doesn't work in CSS */
-  pre.src-clojure:before { content: 'Clojure'; }
-  pre.src-css:before { content: 'CSS'; }
-  pre.src-D:before { content: 'D'; }
-  pre.src-ditaa:before { content: 'ditaa'; }
-  pre.src-dot:before { content: 'Graphviz'; }
-  pre.src-calc:before { content: 'Emacs Calc'; }
-  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
-  pre.src-fortran:before { content: 'Fortran'; }
-  pre.src-gnuplot:before { content: 'gnuplot'; }
-  pre.src-haskell:before { content: 'Haskell'; }
-  pre.src-hledger:before { content: 'hledger'; }
-  pre.src-java:before { content: 'Java'; }
-  pre.src-js:before { content: 'Javascript'; }
-  pre.src-latex:before { content: 'LaTeX'; }
-  pre.src-ledger:before { content: 'Ledger'; }
-  pre.src-lisp:before { content: 'Lisp'; }
-  pre.src-lilypond:before { content: 'Lilypond'; }
-  pre.src-lua:before { content: 'Lua'; }
-  pre.src-matlab:before { content: 'MATLAB'; }
-  pre.src-mscgen:before { content: 'Mscgen'; }
-  pre.src-ocaml:before { content: 'Objective Caml'; }
-  pre.src-octave:before { content: 'Octave'; }
-  pre.src-org:before { content: 'Org mode'; }
-  pre.src-oz:before { content: 'OZ'; }
-  pre.src-plantuml:before { content: 'Plantuml'; }
-  pre.src-processing:before { content: 'Processing.js'; }
-  pre.src-python:before { content: 'Python'; }
-  pre.src-R:before { content: 'R'; }
-  pre.src-ruby:before { content: 'Ruby'; }
-  pre.src-sass:before { content: 'Sass'; }
-  pre.src-scheme:before { content: 'Scheme'; }
-  pre.src-screen:before { content: 'Gnu Screen'; }
-  pre.src-sed:before { content: 'Sed'; }
-  pre.src-sh:before { content: 'shell'; }
-  pre.src-sql:before { content: 'SQL'; }
-  pre.src-sqlite:before { content: 'SQLite'; }
-  /* additional languages in org.el's org-babel-load-languages alist */
-  pre.src-forth:before { content: 'Forth'; }
-  pre.src-io:before { content: 'IO'; }
-  pre.src-J:before { content: 'J'; }
-  pre.src-makefile:before { content: 'Makefile'; }
-  pre.src-maxima:before { content: 'Maxima'; }
-  pre.src-perl:before { content: 'Perl'; }
-  pre.src-picolisp:before { content: 'Pico Lisp'; }
-  pre.src-scala:before { content: 'Scala'; }
-  pre.src-shell:before { content: 'Shell Script'; }
-  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
-  /* additional language identifiers per "defun org-babel-execute"
-       in ob-*.el */
-  pre.src-cpp:before  { content: 'C++'; }
-  pre.src-abc:before  { content: 'ABC'; }
-  pre.src-coq:before  { content: 'Coq'; }
-  pre.src-groovy:before  { content: 'Groovy'; }
-  /* additional language identifiers from org-babel-shell-names in
-     ob-shell.el: ob-shell is the only babel language using a lambda to put
-     the execution function name together. */
-  pre.src-bash:before  { content: 'bash'; }
-  pre.src-csh:before  { content: 'csh'; }
-  pre.src-ash:before  { content: 'ash'; }
-  pre.src-dash:before  { content: 'dash'; }
-  pre.src-ksh:before  { content: 'ksh'; }
-  pre.src-mksh:before  { content: 'mksh'; }
-  pre.src-posh:before  { content: 'posh'; }
-  /* Additional Emacs modes also supported by the LaTeX listings package */
-  pre.src-ada:before { content: 'Ada'; }
-  pre.src-asm:before { content: 'Assembler'; }
-  pre.src-caml:before { content: 'Caml'; }
-  pre.src-delphi:before { content: 'Delphi'; }
-  pre.src-html:before { content: 'HTML'; }
-  pre.src-idl:before { content: 'IDL'; }
-  pre.src-mercury:before { content: 'Mercury'; }
-  pre.src-metapost:before { content: 'MetaPost'; }
-  pre.src-modula-2:before { content: 'Modula-2'; }
-  pre.src-pascal:before { content: 'Pascal'; }
-  pre.src-ps:before { content: 'PostScript'; }
-  pre.src-prolog:before { content: 'Prolog'; }
-  pre.src-simula:before { content: 'Simula'; }
-  pre.src-tcl:before { content: 'tcl'; }
-  pre.src-tex:before { content: 'TeX'; }
-  pre.src-plain-tex:before { content: 'Plain TeX'; }
-  pre.src-verilog:before { content: 'Verilog'; }
-  pre.src-vhdl:before { content: 'VHDL'; }
-  pre.src-xml:before { content: 'XML'; }
-  pre.src-nxml:before { content: 'XML'; }
-  /* add a generic configuration mode; LaTeX export needs an additional
-     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
-  pre.src-conf:before { content: 'Configuration File'; }
+<link rel="stylesheet" type="text/css" href="latexcss/latexcss.css" />
+<link rel="stylesheet" type="text/css" href="../latexcss/latexcss.css" />
+<link rel="alternate stylesheet" type="https://orgmode.org/resources/style/org-demo.min.css" />
+<link rel="alternate stylesheet" type="../latexcss/latexcss.css" />
+<script src="https://orgmode.org/org-info.js">
+// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
+// @license-end
+</script>
 
-  table { border-collapse:collapse; }
-  caption.t-above { caption-side: top; }
-  caption.t-bottom { caption-side: bottom; }
-  td, th { vertical-align:top;  }
-  th.org-right  { text-align: center;  }
-  th.org-left   { text-align: center;   }
-  th.org-center { text-align: center; }
-  td.org-right  { text-align: right;  }
-  td.org-left   { text-align: left;   }
-  td.org-center { text-align: center; }
-  dt { font-weight: bold; }
-  .footpara { display: inline; }
-  .footdef  { margin-bottom: 1em; }
-  .figure { padding: 1em; }
-  .figure p { text-align: center; }
-  .equation-container {
-    display: table;
-    text-align: center;
-    width: 100%;
-  }
-  .equation {
-    vertical-align: middle;
-  }
-  .equation-label {
-    display: table-cell;
-    text-align: right;
-    vertical-align: middle;
-  }
-  .inlinetask {
-    padding: 10px;
-    border: 2px solid gray;
-    margin: 10px;
-    background: #ffffcc;
-  }
-  #org-div-home-and-up
-   { text-align: right; font-size: 70%; white-space: nowrap; }
-  textarea { overflow-x: auto; }
-  .linenr { font-size: smaller }
-  .code-highlighted { background-color: #ffff00; }
-  .org-info-js_info-navigation { border-style: none; }
-  #org-info-js_console-label
-    { font-size: 10px; font-weight: bold; white-space: nowrap; }
-  .org-info-js_search-highlight
-    { background-color: #ffff00; color: #000000; font-weight: bold; }
-  .org-svg { }
-</style>
+<script>
+// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
+org_html_manager.set("TOC_DEPTH", "3");
+org_html_manager.set("LINK_HOME", "");
+org_html_manager.set("LINK_UP", "");
+org_html_manager.set("LOCAL_TOC", "1");
+org_html_manager.set("VIEW_BUTTONS", "0");
+org_html_manager.set("MOUSE_HINT", "underline");
+org_html_manager.set("FIXED_TOC", "0");
+org_html_manager.set("TOC", "1");
+org_html_manager.set("VIEW", "info");
+org_html_manager.setup();  // activate after the parameters are set
+// @license-end
+</script>
 </head>
 <body>
 <div id="content" class="content">
@@ -201,16 +40,16 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#orgd614fdc">1. DEBUGGING</a>
+<li><a href="#org5e2d168">1. DEBUGGING</a>
 <ul>
-<li><a href="#org45d5857">1.1. Be aware of non-volatile registers</a></li>
-<li><a href="#orgef861da">1.2. Blame yourself before blaming your compiler</a>
+<li><a href="#orgb7288da">1.1. Be aware of non-volatile registers</a></li>
+<li><a href="#org6883487">1.2. Blame yourself before blaming your compiler</a>
 <ul>
-<li><a href="#org6783cf8">1.2.1. suggestions</a></li>
+<li><a href="#org512c2e6">1.2.1. suggestions</a></li>
 </ul>
 </li>
-<li><a href="#orgdef44c0">1.3. setc, sete, setz, setb等</a></li>
-<li><a href="#orga868e3a">1.4. use gcc/clang extended assembly</a></li>
+<li><a href="#orge614302">1.3. setc, sete, setz, setb等</a></li>
+<li><a href="#org63c8b46">1.4. use gcc/clang extended assembly</a></li>
 </ul>
 </li>
 </ul>
@@ -219,20 +58,19 @@
 <p>
 <a href="./index.html">Back to index</a>
 </p>
-
 <p>
 最近在写一个用户态抢占式调度线程。这次想写细致和全面一些（基准性能 &amp;&amp; 支持异步IO）。一些原子操作我选择汇编实现，踩了一些坑，花了很长时间才定位到问题出在汇编代码上。
 </p>
 
-<div id="outline-container-orgd614fdc" class="outline-2">
-<h2 id="orgd614fdc"><span class="section-number-2">1.</span> DEBUGGING</h2>
+<div id="outline-container-org5e2d168" class="outline-2">
+<h2 id="org5e2d168"><span class="section-number-2">1.</span> DEBUGGING</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 当你遇到以下类似的BUG时，你很可能需要检查一下自己的汇编代码是否出错。
 </p>
 </div>
-<div id="outline-container-org45d5857" class="outline-3">
-<h3 id="org45d5857"><span class="section-number-3">1.1.</span> Be aware of non-volatile registers</h3>
+<div id="outline-container-orgb7288da" class="outline-3">
+<h3 id="orgb7288da"><span class="section-number-3">1.1.</span> Be aware of non-volatile registers</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 根据System V AMD64 ABI, <code>%rbp</code>, <code>%rsp</code>, <code>%rbp</code>, <code>%rbx</code>, <code>%r12</code>, <code>%r13</code>, <code>%r14</code>, <code>%15</code> 是non-volatile registers(callee-saved)。 caller从called function中返回后，认为这些寄存器的值是不变的。 如果callee有涉及修改这些寄存器的操作，则它负责在函数开始/返回前保存和恢复这些寄存器的值。
@@ -264,7 +102,7 @@ atomic_load_u128:
 </p>
 
 
-<div id="org78fbd18" class="figure">
+<div id="org00c10a5" class="figure">
 <p><img src="./assets/asm/asm0.png" alt="asm0.png" width="850" />
 </p>
 </div>
@@ -290,7 +128,7 @@ atomic_cas_u128:
 </p>
 
 
-<div id="orgc7f90ac" class="figure">
+<div id="org39e0fdc" class="figure">
 <p><img src="./assets/asm/asm1.jpg" alt="asm1.jpg" width="850" />
 </p>
 </div>
@@ -339,8 +177,8 @@ atomic_cas_u128:
 </div>
 </div>
 
-<div id="outline-container-orgef861da" class="outline-3">
-<h3 id="orgef861da"><span class="section-number-3">1.2.</span> Blame yourself before blaming your compiler</h3>
+<div id="outline-container-org6883487" class="outline-3">
+<h3 id="org6883487"><span class="section-number-3">1.2.</span> Blame yourself before blaming your compiler</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 如果你没有在写操作栈帧的代码（如buffer overflow），或者直接操作指令寄存器的代码（如JIT），大量硬件层面的汇编代码、大量操作向量寄存器的代码等，那请相信你的编译器。
@@ -428,8 +266,8 @@ add:
 </p>
 </div>
 
-<div id="outline-container-org6783cf8" class="outline-4">
-<h4 id="org6783cf8"><span class="section-number-4">1.2.1.</span> suggestions</h4>
+<div id="outline-container-org512c2e6" class="outline-4">
+<h4 id="org512c2e6"><span class="section-number-4">1.2.1.</span> suggestions</h4>
 <div class="outline-text-4" id="text-1-2-1">
 <p>
 除了上述例子，一个在并发场景下经常会遇到的问题就是指令重排（re-ordering）。
@@ -462,8 +300,8 @@ printf打印变量可能改变了生成的代码，gdb打断点可能会插入�
 </div>
 </div>
 
-<div id="outline-container-orgdef44c0" class="outline-3">
-<h3 id="orgdef44c0"><span class="section-number-3">1.3.</span> setc, sete, setz, setb等</h3>
+<div id="outline-container-orge614302" class="outline-3">
+<h3 id="orge614302"><span class="section-number-3">1.3.</span> setc, sete, setz, setb等</h3>
 <div class="outline-text-3" id="text-1-3">
 <p>
 这几个指令会的目的寄存器是单字节的，如 <code>%al</code>, <code>%dil</code>, <code>%cl</code> ， 它们分别代表 <code>%rax</code> , <code>%rdi</code>, <code>%rcx</code> 的最低8位。
@@ -557,8 +395,8 @@ version2的movzbl在mov前会将 <code>%eax</code> 置0。
 </div>
 </div>
 
-<div id="outline-container-orga868e3a" class="outline-3">
-<h3 id="orga868e3a"><span class="section-number-3">1.4.</span> use gcc/clang extended assembly</h3>
+<div id="outline-container-org63c8b46" class="outline-3">
+<h3 id="org63c8b46"><span class="section-number-3">1.4.</span> use gcc/clang extended assembly</h3>
 <div class="outline-text-3" id="text-1-4">
 <p>
 纯手写的汇编没有给编译器留下优化的空间，还有可能存在潜在bug（如不遵守calling convention），如果可以，尽量使用gcc/clang的内联汇编。
@@ -638,7 +476,7 @@ clang15 -O3生成的汇编：
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: 于承业</p>
-<p class="date">Created: 2023-01-21 Sat 23:14</p>
+<p class="date">Created: 2023-03-15 Wed 15:29</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

@@ -3,277 +3,93 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2022-05-10 Tue 21:29 -->
+<!-- 2023-03-15 Wed 15:28 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>字节跳动暑期实习后端开发工程师-内容安全(已offer)</title>
-<meta name="generator" content="Org mode" />
 <meta name="author" content="于承业" />
-<style type="text/css">
- <!--/*--><![CDATA[/*><!--*/
-  .title  { text-align: center;
-             margin-bottom: .2em; }
-  .subtitle { text-align: center;
-              font-size: medium;
-              font-weight: bold;
-              margin-top:0; }
-  .todo   { font-family: monospace; color: red; }
-  .done   { font-family: monospace; color: green; }
-  .priority { font-family: monospace; color: orange; }
-  .tag    { background-color: #eee; font-family: monospace;
-            padding: 2px; font-size: 80%; font-weight: normal; }
-  .timestamp { color: #bebebe; }
-  .timestamp-kwd { color: #5f9ea0; }
-  .org-right  { margin-left: auto; margin-right: 0px;  text-align: right; }
-  .org-left   { margin-left: 0px;  margin-right: auto; text-align: left; }
-  .org-center { margin-left: auto; margin-right: auto; text-align: center; }
-  .underline { text-decoration: underline; }
-  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
-  p.verse { margin-left: 3%; }
-  pre {
-    border: 1px solid #ccc;
-    box-shadow: 3px 3px 3px #eee;
-    padding: 8pt;
-    font-family: monospace;
-    overflow: auto;
-    margin: 1.2em;
-  }
-  pre.src {
-    position: relative;
-    overflow: auto;
-    padding-top: 1.2em;
-  }
-  pre.src:before {
-    display: none;
-    position: absolute;
-    background-color: white;
-    top: -10px;
-    right: 10px;
-    padding: 3px;
-    border: 1px solid black;
-  }
-  pre.src:hover:before { display: inline; margin-top: 14px;}
-  /* Languages per Org manual */
-  pre.src-asymptote:before { content: 'Asymptote'; }
-  pre.src-awk:before { content: 'Awk'; }
-  pre.src-C:before { content: 'C'; }
-  /* pre.src-C++ doesn't work in CSS */
-  pre.src-clojure:before { content: 'Clojure'; }
-  pre.src-css:before { content: 'CSS'; }
-  pre.src-D:before { content: 'D'; }
-  pre.src-ditaa:before { content: 'ditaa'; }
-  pre.src-dot:before { content: 'Graphviz'; }
-  pre.src-calc:before { content: 'Emacs Calc'; }
-  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
-  pre.src-fortran:before { content: 'Fortran'; }
-  pre.src-gnuplot:before { content: 'gnuplot'; }
-  pre.src-haskell:before { content: 'Haskell'; }
-  pre.src-hledger:before { content: 'hledger'; }
-  pre.src-java:before { content: 'Java'; }
-  pre.src-js:before { content: 'Javascript'; }
-  pre.src-latex:before { content: 'LaTeX'; }
-  pre.src-ledger:before { content: 'Ledger'; }
-  pre.src-lisp:before { content: 'Lisp'; }
-  pre.src-lilypond:before { content: 'Lilypond'; }
-  pre.src-lua:before { content: 'Lua'; }
-  pre.src-matlab:before { content: 'MATLAB'; }
-  pre.src-mscgen:before { content: 'Mscgen'; }
-  pre.src-ocaml:before { content: 'Objective Caml'; }
-  pre.src-octave:before { content: 'Octave'; }
-  pre.src-org:before { content: 'Org mode'; }
-  pre.src-oz:before { content: 'OZ'; }
-  pre.src-plantuml:before { content: 'Plantuml'; }
-  pre.src-processing:before { content: 'Processing.js'; }
-  pre.src-python:before { content: 'Python'; }
-  pre.src-R:before { content: 'R'; }
-  pre.src-ruby:before { content: 'Ruby'; }
-  pre.src-sass:before { content: 'Sass'; }
-  pre.src-scheme:before { content: 'Scheme'; }
-  pre.src-screen:before { content: 'Gnu Screen'; }
-  pre.src-sed:before { content: 'Sed'; }
-  pre.src-sh:before { content: 'shell'; }
-  pre.src-sql:before { content: 'SQL'; }
-  pre.src-sqlite:before { content: 'SQLite'; }
-  /* additional languages in org.el's org-babel-load-languages alist */
-  pre.src-forth:before { content: 'Forth'; }
-  pre.src-io:before { content: 'IO'; }
-  pre.src-J:before { content: 'J'; }
-  pre.src-makefile:before { content: 'Makefile'; }
-  pre.src-maxima:before { content: 'Maxima'; }
-  pre.src-perl:before { content: 'Perl'; }
-  pre.src-picolisp:before { content: 'Pico Lisp'; }
-  pre.src-scala:before { content: 'Scala'; }
-  pre.src-shell:before { content: 'Shell Script'; }
-  pre.src-ebnf2ps:before { content: 'ebfn2ps'; }
-  /* additional language identifiers per "defun org-babel-execute"
-       in ob-*.el */
-  pre.src-cpp:before  { content: 'C++'; }
-  pre.src-abc:before  { content: 'ABC'; }
-  pre.src-coq:before  { content: 'Coq'; }
-  pre.src-groovy:before  { content: 'Groovy'; }
-  /* additional language identifiers from org-babel-shell-names in
-     ob-shell.el: ob-shell is the only babel language using a lambda to put
-     the execution function name together. */
-  pre.src-bash:before  { content: 'bash'; }
-  pre.src-csh:before  { content: 'csh'; }
-  pre.src-ash:before  { content: 'ash'; }
-  pre.src-dash:before  { content: 'dash'; }
-  pre.src-ksh:before  { content: 'ksh'; }
-  pre.src-mksh:before  { content: 'mksh'; }
-  pre.src-posh:before  { content: 'posh'; }
-  /* Additional Emacs modes also supported by the LaTeX listings package */
-  pre.src-ada:before { content: 'Ada'; }
-  pre.src-asm:before { content: 'Assembler'; }
-  pre.src-caml:before { content: 'Caml'; }
-  pre.src-delphi:before { content: 'Delphi'; }
-  pre.src-html:before { content: 'HTML'; }
-  pre.src-idl:before { content: 'IDL'; }
-  pre.src-mercury:before { content: 'Mercury'; }
-  pre.src-metapost:before { content: 'MetaPost'; }
-  pre.src-modula-2:before { content: 'Modula-2'; }
-  pre.src-pascal:before { content: 'Pascal'; }
-  pre.src-ps:before { content: 'PostScript'; }
-  pre.src-prolog:before { content: 'Prolog'; }
-  pre.src-simula:before { content: 'Simula'; }
-  pre.src-tcl:before { content: 'tcl'; }
-  pre.src-tex:before { content: 'TeX'; }
-  pre.src-plain-tex:before { content: 'Plain TeX'; }
-  pre.src-verilog:before { content: 'Verilog'; }
-  pre.src-vhdl:before { content: 'VHDL'; }
-  pre.src-xml:before { content: 'XML'; }
-  pre.src-nxml:before { content: 'XML'; }
-  /* add a generic configuration mode; LaTeX export needs an additional
-     (add-to-list 'org-latex-listings-langs '(conf " ")) in .emacs */
-  pre.src-conf:before { content: 'Configuration File'; }
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" type="text/css" href="latexcss/latexcss.css" />
+<link rel="stylesheet" type="text/css" href="../latexcss/latexcss.css" />
+<link rel="alternate stylesheet" type="https://orgmode.org/resources/style/org-demo.min.css" />
+<link rel="alternate stylesheet" type="../latexcss/latexcss.css" />
+<script src="https://orgmode.org/org-info.js">
+// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
+// @license-end
+</script>
 
-  table { border-collapse:collapse; }
-  caption.t-above { caption-side: top; }
-  caption.t-bottom { caption-side: bottom; }
-  td, th { vertical-align:top;  }
-  th.org-right  { text-align: center;  }
-  th.org-left   { text-align: center;   }
-  th.org-center { text-align: center; }
-  td.org-right  { text-align: right;  }
-  td.org-left   { text-align: left;   }
-  td.org-center { text-align: center; }
-  dt { font-weight: bold; }
-  .footpara { display: inline; }
-  .footdef  { margin-bottom: 1em; }
-  .figure { padding: 1em; }
-  .figure p { text-align: center; }
-  .equation-container {
-    display: table;
-    text-align: center;
-    width: 100%;
-  }
-  .equation {
-    vertical-align: middle;
-  }
-  .equation-label {
-    display: table-cell;
-    text-align: right;
-    vertical-align: middle;
-  }
-  .inlinetask {
-    padding: 10px;
-    border: 2px solid gray;
-    margin: 10px;
-    background: #ffffcc;
-  }
-  #org-div-home-and-up
-   { text-align: right; font-size: 70%; white-space: nowrap; }
-  textarea { overflow-x: auto; }
-  .linenr { font-size: smaller }
-  .code-highlighted { background-color: #ffff00; }
-  .org-info-js_info-navigation { border-style: none; }
-  #org-info-js_console-label
-    { font-size: 10px; font-weight: bold; white-space: nowrap; }
-  .org-info-js_search-highlight
-    { background-color: #ffff00; color: #000000; font-weight: bold; }
-  .org-svg { width: 90%; }
-  /*]]>*/-->
-</style>
-<script type="text/javascript">
-// @license magnet:?xt=urn:btih:e95b018ef3580986a04669f1b5879592219e2a7a&dn=public-domain.txt Public Domain
-<!--/*--><![CDATA[/*><!--*/
-     function CodeHighlightOn(elem, id)
-     {
-       var target = document.getElementById(id);
-       if(null != target) {
-         elem.classList.add("code-highlighted");
-         target.classList.add("code-highlighted");
-       }
-     }
-     function CodeHighlightOff(elem, id)
-     {
-       var target = document.getElementById(id);
-       if(null != target) {
-         elem.classList.remove("code-highlighted");
-         target.classList.remove("code-highlighted");
-       }
-     }
-    /*]]>*///-->
+<script>
+// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
+org_html_manager.set("TOC_DEPTH", "3");
+org_html_manager.set("LINK_HOME", "");
+org_html_manager.set("LINK_UP", "");
+org_html_manager.set("LOCAL_TOC", "1");
+org_html_manager.set("VIEW_BUTTONS", "0");
+org_html_manager.set("MOUSE_HINT", "underline");
+org_html_manager.set("FIXED_TOC", "0");
+org_html_manager.set("TOC", "1");
+org_html_manager.set("VIEW", "info");
+org_html_manager.setup();  // activate after the parameters are set
 // @license-end
 </script>
 </head>
 <body>
-<div id="content">
+<div id="content" class="content">
 <h1 class="title">字节跳动暑期实习后端开发工程师-内容安全(已offer)</h1>
-<div id="table-of-contents">
+<div id="table-of-contents" role="doc-toc">
 <h2>Table of Contents</h2>
-<div id="text-table-of-contents">
+<div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org052a0a5">1. <span class="done DONE">DONE</span> 技术中台</a>
+<li><a href="#org544c332">1. <span class="done DONE">DONE</span> 技术中台</a>
 <ul>
-<li><a href="#orgfe10f26">1.1. 总体感受</a></li>
-<li><a href="#orgdc9d0c3">1.2. 算法题（先陈述思路，然后写代码，限时30min）</a></li>
-<li><a href="#org5168be3">1.3. 基础知识</a>
+<li><a href="#org6c1c29c">1.1. 总体感受</a></li>
+<li><a href="#orgd842a82">1.2. 算法题（先陈述思路，然后写代码，限时30min）</a></li>
+<li><a href="#orgf719509">1.3. 基础知识</a>
 <ul>
-<li><a href="#orgdef3f7b">1.3.1. C++</a></li>
-<li><a href="#org0581609">1.3.2. 计网</a></li>
-<li><a href="#orga493a5a">1.3.3. 操作系统</a></li>
-<li><a href="#org69aaf13">1.3.4. 数据库（我说我没复习）</a></li>
+<li><a href="#org709bdf1">1.3.1. C++</a></li>
+<li><a href="#orga4d8087">1.3.2. 计网</a></li>
+<li><a href="#orgc094d80">1.3.3. 操作系统</a></li>
+<li><a href="#org023187a">1.3.4. 数据库（我说我没复习）</a></li>
 </ul>
 </li>
-<li><a href="#orgd83eefb">1.4. 反问</a></li>
+<li><a href="#orga821ce8">1.4. 反问</a></li>
 </ul>
 </li>
-<li><a href="#org51e8d81">2. 内容安全</a>
+<li><a href="#orge2534d8">2. 内容安全</a>
 <ul>
-<li><a href="#org8e4af1f">2.1. <span class="done DONE">DONE</span> 一面</a>
+<li><a href="#org0207573">2.1. <span class="done DONE">DONE</span> 一面</a>
 <ul>
-<li><a href="#org2b812cc">2.1.1. 基础知识</a></li>
-<li><a href="#orgebf4c37">2.1.2. 算法题</a></li>
+<li><a href="#org6d94743">2.1.1. 基础知识</a></li>
+<li><a href="#org4f1f665">2.1.2. 算法题</a></li>
 </ul>
 </li>
-<li><a href="#org182f0db">2.2. <span class="done DONE">DONE</span> 二面</a>
+<li><a href="#orgb161462">2.2. <span class="done DONE">DONE</span> 二面</a>
 <ul>
-<li><a href="#orgf665840">2.2.1. 基础知识</a></li>
-<li><a href="#org3a71238">2.2.2. 算法题</a></li>
-<li><a href="#orge99a1cc">2.2.3. 反问</a></li>
+<li><a href="#org8bf84e7">2.2.1. 基础知识</a></li>
+<li><a href="#orgea71d87">2.2.2. 算法题</a></li>
+<li><a href="#orgd274c27">2.2.3. 反问</a></li>
 </ul>
 </li>
-<li><a href="#org4206c16">2.3. <span class="done DONE">DONE</span> 三面</a>
+<li><a href="#org18ba59c">2.3. <span class="done DONE">DONE</span> 三面</a>
 <ul>
-<li><a href="#org424ccf2">2.3.1. 基础知识</a></li>
-<li><a href="#org1b9752e">2.3.2. 算法题</a></li>
-<li><a href="#org554ab53">2.3.3. 项目</a></li>
+<li><a href="#orgd9fb813">2.3.1. 基础知识</a></li>
+<li><a href="#orga309e20">2.3.2. 算法题</a></li>
+<li><a href="#org9b5ea51">2.3.3. 项目</a></li>
 </ul>
 </li>
-<li><a href="#orgc7e8f21">2.4. <span class="done DONE">DONE</span> HR面</a></li>
-<li><a href="#orge3798c1">2.5. <span class="done DONE">DONE</span> OFFER</a></li>
+<li><a href="#orgd7936b5">2.4. <span class="done DONE">DONE</span> HR面</a></li>
+<li><a href="#orgc2cadd0">2.5. <span class="done DONE">DONE</span> OFFER</a></li>
 </ul>
 </li>
 </ul>
 </div>
 </div>
 <p>
-'#+include: back.org
+<a href="./index.html">Back to index</a>
 </p>
 
-
-<div id="outline-container-org052a0a5" class="outline-2">
-<h2 id="org052a0a5"><span class="section-number-2">1</span> <span class="done DONE">DONE</span> 技术中台</h2>
+<div id="outline-container-org544c332" class="outline-2">
+<h2 id="org544c332"><span class="section-number-2">1.</span> <span class="done DONE">DONE</span> 技术中台</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 CLOSED: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-03-16 Wed&gt; </span></span> ~ 1hour
@@ -284,8 +100,8 @@ CLOSED: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-03-16 W
 </p>
 </div>
 
-<div id="outline-container-orgfe10f26" class="outline-3">
-<h3 id="orgfe10f26"><span class="section-number-3">1.1</span> 总体感受</h3>
+<div id="outline-container-org6c1c29c" class="outline-3">
+<h3 id="org6c1c29c"><span class="section-number-3">1.1.</span> 总体感受</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 后端开发，多背八股。之前准备客户端比较多，没复习数据库，哎。
@@ -293,8 +109,8 @@ CLOSED: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-03-16 W
 </div>
 </div>
 
-<div id="outline-container-orgdc9d0c3" class="outline-3">
-<h3 id="orgdc9d0c3"><span class="section-number-3">1.2</span> 算法题（先陈述思路，然后写代码，限时30min）</h3>
+<div id="outline-container-orgd842a82" class="outline-3">
+<h3 id="orgd842a82"><span class="section-number-3">1.2.</span> 算法题（先陈述思路，然后写代码，限时30min）</h3>
 <div class="outline-text-3" id="text-1-2">
 <ol class="org-ol">
 <li>给你一个循环右移N（未知）位后的严格单调数组，找该数组中位数。
@@ -304,12 +120,12 @@ len为偶数，中位数下标是(mid+len/2)%len和(mid+len/2+1)%len</li>
 </div>
 </div>
 
-<div id="outline-container-org5168be3" class="outline-3">
-<h3 id="org5168be3"><span class="section-number-3">1.3</span> 基础知识</h3>
+<div id="outline-container-orgf719509" class="outline-3">
+<h3 id="orgf719509"><span class="section-number-3">1.3.</span> 基础知识</h3>
 <div class="outline-text-3" id="text-1-3">
 </div>
-<div id="outline-container-orgdef3f7b" class="outline-4">
-<h4 id="orgdef3f7b"><span class="section-number-4">1.3.1</span> C++</h4>
+<div id="outline-container-org709bdf1" class="outline-4">
+<h4 id="org709bdf1"><span class="section-number-4">1.3.1.</span> C++</h4>
 <div class="outline-text-4" id="text-1-3-1">
 <ol class="org-ol">
 <li>new/delete和malloc/free的区别</li>
@@ -328,8 +144,8 @@ len为偶数，中位数下标是(mid+len/2)%len和(mid+len/2+1)%len</li>
 </div>
 </div>
 
-<div id="outline-container-org0581609" class="outline-4">
-<h4 id="org0581609"><span class="section-number-4">1.3.2</span> 计网</h4>
+<div id="outline-container-orga4d8087" class="outline-4">
+<h4 id="orga4d8087"><span class="section-number-4">1.3.2.</span> 计网</h4>
 <div class="outline-text-4" id="text-1-3-2">
 <ol class="org-ol">
 <li>TCP和UDP的区别</li>
@@ -350,8 +166,8 @@ len为偶数，中位数下标是(mid+len/2)%len和(mid+len/2+1)%len</li>
 </div>
 
 
-<div id="outline-container-orga493a5a" class="outline-4">
-<h4 id="orga493a5a"><span class="section-number-4">1.3.3</span> 操作系统</h4>
+<div id="outline-container-orgc094d80" class="outline-4">
+<h4 id="orgc094d80"><span class="section-number-4">1.3.3.</span> 操作系统</h4>
 <div class="outline-text-4" id="text-1-3-3">
 <ol class="org-ol">
 <li>进程和线程区别</li>
@@ -362,8 +178,8 @@ len为偶数，中位数下标是(mid+len/2)%len和(mid+len/2+1)%len</li>
 </div>
 </div>
 
-<div id="outline-container-org69aaf13" class="outline-4">
-<h4 id="org69aaf13"><span class="section-number-4">1.3.4</span> 数据库（我说我没复习）</h4>
+<div id="outline-container-org023187a" class="outline-4">
+<h4 id="org023187a"><span class="section-number-4">1.3.4.</span> 数据库（我说我没复习）</h4>
 <div class="outline-text-4" id="text-1-3-4">
 <ol class="org-ol">
 <li>哪些场景下索引会失效</li>
@@ -373,8 +189,8 @@ len为偶数，中位数下标是(mid+len/2)%len和(mid+len/2+1)%len</li>
 </div>
 
 
-<div id="outline-container-orgd83eefb" class="outline-3">
-<h3 id="orgd83eefb"><span class="section-number-3">1.4</span> 反问</h3>
+<div id="outline-container-orga821ce8" class="outline-3">
+<h3 id="orga821ce8"><span class="section-number-3">1.4.</span> 反问</h3>
 <div class="outline-text-3" id="text-1-4">
 <ol class="org-ol">
 <li>面试表现。面试官说其它回答的还可以，但是数据库在很多岗位都要使用，最好比较熟悉，但是实习主要看中潜力，所以我们还需要复核，你还是有可能通过的。</li>
@@ -386,32 +202,32 @@ len为偶数，中位数下标是(mid+len/2)%len和(mid+len/2+1)%len</li>
 </div>
 
 
-<div id="outline-container-org51e8d81" class="outline-2">
-<h2 id="org51e8d81"><span class="section-number-2">2</span> 内容安全</h2>
+<div id="outline-container-orge2534d8" class="outline-2">
+<h2 id="orge2534d8"><span class="section-number-2">2.</span> 内容安全</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 听HR说是中台挂了然后转到偏业务一点的部门继续加面。
 </p>
 </div>
 
-<div id="outline-container-org8e4af1f" class="outline-3">
-<h3 id="org8e4af1f"><span class="section-number-3">2.1</span> <span class="done DONE">DONE</span> 一面</h3>
+<div id="outline-container-org0207573" class="outline-3">
+<h3 id="org0207573"><span class="section-number-3">2.1.</span> <span class="done DONE">DONE</span> 一面</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 CLOSED: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-03-25 Fri&gt;</span></span>
 </p>
 </div>
 
-<div id="outline-container-org2b812cc" class="outline-4">
-<h4 id="org2b812cc"><span class="section-number-4">2.1.1</span> 基础知识</h4>
+<div id="outline-container-org6d94743" class="outline-4">
+<h4 id="org6d94743"><span class="section-number-4">2.1.1.</span> 基础知识</h4>
 <div class="outline-text-4" id="text-2-1-1">
 <p>
 基础知识基本问的八股，也没挖很深。
 </p>
 </div>
 </div>
-<div id="outline-container-orgebf4c37" class="outline-4">
-<h4 id="orgebf4c37"><span class="section-number-4">2.1.2</span> 算法题</h4>
+<div id="outline-container-org4f1f665" class="outline-4">
+<h4 id="org4f1f665"><span class="section-number-4">2.1.2.</span> 算法题</h4>
 <div class="outline-text-4" id="text-2-1-2">
 <ol class="org-ol">
 <li>正整数数组，如何排序，通过字符串拼接可以得到最大数字？
@@ -429,16 +245,16 @@ CLOSED: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-03-25 F
 </div>
 </div>
 
-<div id="outline-container-org182f0db" class="outline-3">
-<h3 id="org182f0db"><span class="section-number-3">2.2</span> <span class="done DONE">DONE</span> 二面</h3>
+<div id="outline-container-orgb161462" class="outline-3">
+<h3 id="orgb161462"><span class="section-number-3">2.2.</span> <span class="done DONE">DONE</span> 二面</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 CLOSED: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-03-31 Thu&gt;</span></span>
 </p>
 </div>
 
-<div id="outline-container-orgf665840" class="outline-4">
-<h4 id="orgf665840"><span class="section-number-4">2.2.1</span> 基础知识</h4>
+<div id="outline-container-org8bf84e7" class="outline-4">
+<h4 id="org8bf84e7"><span class="section-number-4">2.2.1.</span> 基础知识</h4>
 <div class="outline-text-4" id="text-2-2-1">
 <p>
 面试官说上一面其它问的比较全，所以只问了操作系统
@@ -453,8 +269,8 @@ CLOSED: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-03-31 T
 </div>
 </div>
 
-<div id="outline-container-org3a71238" class="outline-4">
-<h4 id="org3a71238"><span class="section-number-4">2.2.2</span> 算法题</h4>
+<div id="outline-container-orgea71d87" class="outline-4">
+<h4 id="orgea71d87"><span class="section-number-4">2.2.2.</span> 算法题</h4>
 <div class="outline-text-4" id="text-2-2-2">
 <ol class="org-ol">
 <li>二维数组，行从左到右递增，每行的第一个元素大于上一行最后一个元素，判断target是否存在。
@@ -463,8 +279,8 @@ CLOSED: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-03-31 T
 </div>
 </div>
 
-<div id="outline-container-orge99a1cc" class="outline-4">
-<h4 id="orge99a1cc"><span class="section-number-4">2.2.3</span> 反问</h4>
+<div id="outline-container-orgd274c27" class="outline-4">
+<h4 id="orgd274c27"><span class="section-number-4">2.2.3.</span> 反问</h4>
 <div class="outline-text-4" id="text-2-2-3">
 <p>
 面试官一会要开会我就没问了问表现如何。
@@ -474,8 +290,8 @@ CLOSED: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-03-31 T
 </div>
 </div>
 
-<div id="outline-container-org4206c16" class="outline-3">
-<h3 id="org4206c16"><span class="section-number-3">2.3</span> <span class="done DONE">DONE</span> 三面</h3>
+<div id="outline-container-org18ba59c" class="outline-3">
+<h3 id="org18ba59c"><span class="section-number-3">2.3.</span> <span class="done DONE">DONE</span> 三面</h3>
 <div class="outline-text-3" id="text-2-3">
 <ul class="org-ul">
 <li>ORIGINAL: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-04-02 Sat&gt;</span></span>
@@ -484,8 +300,8 @@ CLOSED: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-03-31 T
 </ul>
 </div>
 
-<div id="outline-container-org424ccf2" class="outline-4">
-<h4 id="org424ccf2"><span class="section-number-4">2.3.1</span> 基础知识</h4>
+<div id="outline-container-orgd9fb813" class="outline-4">
+<h4 id="orgd9fb813"><span class="section-number-4">2.3.1.</span> 基础知识</h4>
 <div class="outline-text-4" id="text-2-3-1">
 <ol class="org-ol">
 <li>浏览器访问URL流程</li>
@@ -495,16 +311,16 @@ CLOSED: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-03-31 T
 </ol>
 </div>
 </div>
-<div id="outline-container-org1b9752e" class="outline-4">
-<h4 id="org1b9752e"><span class="section-number-4">2.3.2</span> 算法题</h4>
+<div id="outline-container-orga309e20" class="outline-4">
+<h4 id="orga309e20"><span class="section-number-4">2.3.2.</span> 算法题</h4>
 <div class="outline-text-4" id="text-2-3-2">
 <ol class="org-ol">
 <li>给定char二维数组m和string w，可以从m的任意位置出发上下左右移动，返回是否能匹配w。 可以重复访问m中已访问过的位置。</li>
 </ol>
 </div>
 </div>
-<div id="outline-container-org554ab53" class="outline-4">
-<h4 id="org554ab53"><span class="section-number-4">2.3.3</span> 项目</h4>
+<div id="outline-container-org9b5ea51" class="outline-4">
+<h4 id="org9b5ea51"><span class="section-number-4">2.3.3.</span> 项目</h4>
 <div class="outline-text-4" id="text-2-3-3">
 <ol class="org-ol">
 <li>自己说一下项目</li>
@@ -520,8 +336,8 @@ CLOSED: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-03-31 T
 
 
 
-<div id="outline-container-orgc7e8f21" class="outline-3">
-<h3 id="orgc7e8f21"><span class="section-number-3">2.4</span> <span class="done DONE">DONE</span> HR面</h3>
+<div id="outline-container-orgd7936b5" class="outline-3">
+<h3 id="orgd7936b5"><span class="section-number-3">2.4.</span> <span class="done DONE">DONE</span> HR面</h3>
 <div class="outline-text-3" id="text-2-4">
 <p>
 三面后七八分钟的样子收到HR面通知，立即开始。
@@ -535,8 +351,8 @@ HR说如果挂了48小时内会收到拒信，如果通过的话大概3-5天offe
 </div>
 </div>
 
-<div id="outline-container-orge3798c1" class="outline-3">
-<h3 id="orge3798c1"><span class="section-number-3">2.5</span> <span class="done DONE">DONE</span> OFFER</h3>
+<div id="outline-container-orgc2cadd0" class="outline-3">
+<h3 id="orgc2cadd0"><span class="section-number-3">2.5.</span> <span class="done DONE">DONE</span> OFFER</h3>
 <div class="outline-text-3" id="text-2-5">
 <p>
 CLOSED: <span class="timestamp-wrapper"><span class="timestamp">&lt;2022-04-08 Fri&gt;</span></span>
@@ -551,7 +367,7 @@ HR面第二天下午接到电话约了入职办理时间，并发了正式录用
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: 于承业</p>
-<p class="date">Created: 2022-05-10 Tue 21:29</p>
+<p class="date">Created: 2023-03-15 Wed 15:28</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

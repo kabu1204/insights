@@ -2,6 +2,9 @@
 #+LATEX_COMPILER: xelatex
 #+LATEX_CLASS: elegantpaper
 #+OPTIONS: prop:t
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="latexcss/latexcss.css" />
+#+HTML_HEAD_EXTRA: <link rel="alternate stylesheet" type="https://orgmode.org/resources/style/org-demo.min.css" />
+
 * Humble Room on Mt. Takao
 This github pages is a site to publish some of my ideas. There used to be a blog, unfortunately due to some trivials, it had been shutdown. I'll put on my new articles here and try to re-upload some of my articles written in the past. 
 ** About me

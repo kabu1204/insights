@@ -1,5 +1,7 @@
 #+include: ../back.org
 #+TITLE: a better Lisp interpreter in Rust
+#+SETUPFILE: ../latexcss/latexcss.theme
+
 * rlisp
 rlisp is a better(compared with my previous project [[https://github.com/kabu1204/ILisp][ILisp]]) Lisp interpreter written in Rust.
 

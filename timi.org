@@ -1,5 +1,6 @@
 #+include: back.org
 #+TITLE: 天美工作室群(L1)游戏客户端开发实习(已offer)
+#+SETUPFILE: latexcss/latexcss.theme
 
 面试岗位：游戏客户端开发-实习生
 
