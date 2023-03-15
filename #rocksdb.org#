@@ -1,9 +1,0 @@
-#+OPTIONS: ^:nil
-
-* Questions
-1. if =options.block_cache= is non-NULL, it's used to cache frequently used uncompressed blocks. The compressed blocks, which are actually what rocksdb reads/write, will be handled by OS PageCache.
-2. The =block_size= is the size of uncompressed blocks. It's recommended to be 1/3 of the memory budget. 
-3. =db_write_buffer_size= is different from =write_buffer_size=. =write_buffer_size= is the maximum size in bytes of a memtable. =db_write_buffer_size= is the maximum size of all Write Buffers across all Column Families in the database. It's off by default. We should not change it.
-** How RocksDB detect RW/WW conflicts?
-a brief introduction: [[https://github.com/facebook/rocksdb/wiki/Transactions#under-the-hood]]
-
