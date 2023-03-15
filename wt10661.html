@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2023-03-15 Wed 04:48 -->
+<!-- 2023-03-15 Wed 16:05 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>给WiredTiger(MongoDB)提了个build bugfix</title>
@@ -13,7 +13,7 @@
 <link rel="stylesheet" type="text/css" href="../latexcss/latexcss.css" />
 <link rel="alternate stylesheet" type="https://orgmode.org/resources/style/org-demo.min.css" />
 <link rel="alternate stylesheet" type="../latexcss/latexcss.css" />
-<script src="https://orgmode.org/org-info.js">
+<script src="latexcss/org-info.js">
 // @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
 // @license-end
 </script>
@@ -40,16 +40,16 @@ org_html_manager.setup();  // activate after the parameters are set
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org9b6c33c">1. 起因</a></li>
-<li><a href="#org7c3063c">2. 关于Windows上的DLL</a></li>
-<li><a href="#org7c0d481">3. WiredTiger的三方库</a></li>
-<li><a href="#orgf17cb9c">4. 其它修改</a>
+<li><a href="#orgc320a67">1. 起因</a></li>
+<li><a href="#orgbefbaca">2. 关于Windows上的DLL</a></li>
+<li><a href="#orgf1f1579">3. WiredTiger的三方库</a></li>
+<li><a href="#org007ee1a">4. 其它修改</a>
 <ul>
-<li><a href="#org474884b">4.1. detect zlib on windows</a></li>
-<li><a href="#org341163b">4.2. link debug CRT</a></li>
+<li><a href="#orgbab0451">4.1. detect zlib on windows</a></li>
+<li><a href="#orgaccfbf0">4.2. link debug CRT</a></li>
 </ul>
 </li>
-<li><a href="#orga602713">5. 在Windows上编译安装WiredTiger</a></li>
+<li><a href="#org1de3476">5. 在Windows上编译安装WiredTiger</a></li>
 </ul>
 </div>
 </div>
@@ -57,8 +57,8 @@ org_html_manager.setup();  // activate after the parameters are set
 <a href="./index.html">Back to index</a>
 </p>
 
-<div id="outline-container-org9b6c33c" class="outline-2">
-<h2 id="org9b6c33c"><span class="section-number-2">1.</span> 起因</h2>
+<div id="outline-container-orgc320a67" class="outline-2">
+<h2 id="orgc320a67"><span class="section-number-2">1.</span> 起因</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 最近在Windows上测试RocksDB和WiredTiger的基准性能，build过程比较曲折，先是写了个wiredtiger-11.1.0的vcpkg的port(<a href="https://github.com/kabu1204/wiredtiger-vcpkg">kabu1204/wiredtiger-vcpkg</a>)，然后给YCSB-cpp加了<a href="https://github.com/ls4154/YCSB-cpp/pull/9">win64和wiredtiger支持</a>。
@@ -68,8 +68,8 @@ org_html_manager.setup();  // activate after the parameters are set
 </div>
 </div>
 
-<div id="outline-container-org7c3063c" class="outline-2">
-<h2 id="org7c3063c"><span class="section-number-2">2.</span> 关于Windows上的DLL</h2>
+<div id="outline-container-orgbefbaca" class="outline-2">
+<h2 id="orgbefbaca"><span class="section-number-2">2.</span> 关于Windows上的DLL</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 Windows和POSIX的dynamic library有一定区别。
@@ -109,8 +109,8 @@ Windows的动态库由两部分组成，.lib和.dll文件：
 </div>
 </div>
 
-<div id="outline-container-org7c0d481" class="outline-2">
-<h2 id="org7c0d481"><span class="section-number-2">3.</span> WiredTiger的三方库</h2>
+<div id="outline-container-orgf1f1579" class="outline-2">
+<h2 id="orgf1f1579"><span class="section-number-2">3.</span> WiredTiger的三方库</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 WiredTiger是MongoDB的底层存储引擎，它有一些cmake选项，可以链接第三方库（如一些压缩算法库lz4,snappy,zstd,zlib等）。
@@ -147,15 +147,15 @@ For a SHARED library on Windows, the IMPORTED_IMPLIB target property (or its per
 </div>
 </div>
 
-<div id="outline-container-orgf17cb9c" class="outline-2">
-<h2 id="orgf17cb9c"><span class="section-number-2">4.</span> 其它修改</h2>
+<div id="outline-container-org007ee1a" class="outline-2">
+<h2 id="org007ee1a"><span class="section-number-2">4.</span> 其它修改</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 这两处额外的修改主要是为了正确通过vcpkg构建wiredtiger。其实算不上bug，因此也没有提issue。
 </p>
 </div>
-<div id="outline-container-org474884b" class="outline-3">
-<h3 id="org474884b"><span class="section-number-3">4.1.</span> detect zlib on windows</h3>
+<div id="outline-container-orgbab0451" class="outline-3">
+<h3 id="orgbab0451"><span class="section-number-3">4.1.</span> detect zlib on windows</h3>
 <div class="outline-text-3" id="text-4-1">
 <p>
 <code>cmake/configs/auto.cmake</code> 查找zlib时使用的名字是z，在POSIX上会去搜索libz.*，在Windows上会搜索z.lib，然而zlib在Windows上的库文件一般叫zlib.lib：
@@ -199,8 +199,8 @@ index ac8776989..98c4a014e 100644
 </div>
 </div>
 
-<div id="outline-container-org341163b" class="outline-3">
-<h3 id="org341163b"><span class="section-number-3">4.2.</span> link debug CRT</h3>
+<div id="outline-container-orgaccfbf0" class="outline-3">
+<h3 id="orgaccfbf0"><span class="section-number-3">4.2.</span> link debug CRT</h3>
 <div class="outline-text-3" id="text-4-2">
 <p>
 CRT是Windows提供的C运行时函数库（包括malloc,printf等）。
@@ -245,8 +245,8 @@ index a8ca7681f..ef876b7ab 100644
 </div>
 </div>
 
-<div id="outline-container-orga602713" class="outline-2">
-<h2 id="orga602713"><span class="section-number-2">5.</span> 在Windows上编译安装WiredTiger</h2>
+<div id="outline-container-org1de3476" class="outline-2">
+<h2 id="org1de3476"><span class="section-number-2">5.</span> 在Windows上编译安装WiredTiger</h2>
 <div class="outline-text-2" id="text-5">
 <p>
 <a href="https://github.com/kabu1204/wiredtiger-vcpkg">https://github.com/kabu1204/wiredtiger-vcpkg</a>
@@ -256,7 +256,7 @@ index a8ca7681f..ef876b7ab 100644
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: 于承业</p>
-<p class="date">Created: 2023-03-15 Wed 04:48</p>
+<p class="date">Created: 2023-03-15 Wed 16:05</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
