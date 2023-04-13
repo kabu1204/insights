@@ -1,0 +1,343 @@
+#+TITLE: 给Leveldb添加WriteCallback
+#+SETUPFILE: ./latexcss/latexcss.theme
+#+OPTIONS: ^:nil
+#+INCLUDE: back.org
+
+* Introduction
+最近，在leveldb的基础上实现键值分离，提高小key大value下的写性能，后续会专门写几篇post介绍实现原理。
+
+其中，我们在对ValueLog进行垃圾回收时，(1)先将依然有效的value写到新的ValueLog中，然后需要(2)将这些value新的位置<key, vptr>批量写回LSMTree。
+
+这其中存在一个问题：如果在我们完成了(1)，这时用户做了update，(2)就会将用户的update给覆盖，导致不一致。
+
+我们肯定不能在GC的时候将整个DB锁住，因为GC太耗费时间了。做法是，整个GC过程不加锁，在(2)最终写入WAL和LSM之前，最后检查一下将要写回的<key, vptr>，是否被用户覆盖。因为这时我们已经在DBImpl::Write内部了，且leveldb同时只有一个writer可以执行，只要最终检查通过，我们就可以写回。
+
+流程就是：
+1. 选取某个VLOG
+2. 遍历VLOG中的<K,V>，回查LSMTree，将有效的<K, V>放入buffer，无效的丢弃。
+3. 将buffer写入新的VLOG，与此同时获得了这些有效的<K,V>的新位置vptr
+4. 将<K, vptr>写入LSMTree（DBImpl::Write()：
+   - 获得锁
+   - 再次通过DBImpl::Get回查
+   - 回查有效，继续写入WAL和MemTable；回查失败，直接返回
+
+* 为什么需要Callback
+从上面的流程可以看到，我们需要在DBImpl内部，写WAL和MemTable前执行我们的回查逻辑。因此我们需要一种Callback机制。Callback返回Status，如果ok，继续写入，否则返回。
+
+其实RocksDB就有很多Callback，不仅在写WAL前有，在写完WAL和写MemTable前也有，写完MemTable也有Callback，做Flush之前也有Callback。
+
+但我们不需要那么多且复杂的Callback。
+
+* Callback带来的问题
+leveldb在Write中，会将多个writer的WriteBatch组合成BatchGroup，由当前获得写入权的writer批量写入，然后再通知被阻塞的writer写入完成。
+
+但加入了WriteCallback，我们就没法简单地将不同writer的WriteBatch做grouping了。
+
+一个writer的WriteBatch和WriteCallback是绑定的。它的callback执行结果仅代表它的batch能否被写入。对于指定了callback的writer，它们的batch是不能做grouping的。
+
+1. 对于没有指定callback的writer，它们之间可以做batch grouping
+2. 对于指定了callback的writer，它需要单独调用callback和写入batch
+
+这就意味着，我们GC时回写<k, vptr>没法batch，只能一个一个callback去查再写。每次我们都要加锁解锁，降低吞吐量。
+
+为此我们需要改造一些grouping的形式，比起batch group，我们需要writer group。
+
+#+begin_src cpp
+  class LEVELDB_EXPORT WriteCallback {
+   public:
+    virtual ~WriteCallback(){};
+
+    virtual Status Callback(DB* db) = 0;
+
+    // allow writer grouping
+    virtual bool AllowGrouping() const { return false; }
+  };
+#+end_src
+
+* WriterGroup
+
+有了WriteCallback，我们不能简单地group batch，但我们依然可以让当前writer代理等待中的writer进行写入。
+
+WriterGroup的设计：
+1. 一次DBImpl::Write写入一个WriterGroup
+2. 一个WriterGroup包含多个batch group
+3. WriterGroup包含多个leader，leader是batch group的第一个writer
+4. 第一个leader称为first leader，它就是当前取得了写入权的writer
+5. 写入WAL和MemTable的基本单位就是batch group
+
+Group的原则：
+1. 有callback的writer单独成一个batch group，自己是leader。
+2. 连续的多个无callback的writer成一个batch group，第一个writer是leader。该batch group的其它writer的batch被append到leader的batch中。
+3. 无batch（batch==nullptr）的writer单独成batch group，自己是leader。
+4. writer group的总batch size大于预设，停止构造； 或已经包含了等待队列writers_中的所有writer
+5. 所有leader串成链表
+
+WriterGroup:
+#+begin_src cpp
+  // Information kept for every waiting writer
+  /*
+   * db->writers_: [w0|w1|w2|w3|w4|w5|w6|..|..]
+   *
+   * After BuildWriterGroup:
+   *  [ w0 |w1|w2|  w3  |w4|w5|w6|w7|w8]
+   *    |          ↑ |            ↑
+   *    |  w0.next | |   w3.next  |
+   *    |__________| |____________|
+   *
+   * w0.batch also holds the contents of w1.batch and w2.batch
+   * w3.batch holds the contents of w3-w6.batch
+   *
+   * w0 and w3 are called leaders.
+   * w0 is the first leader of the WriteGroup.
+   */
+  struct DBImpl::Writer {
+    explicit Writer(port::Mutex* mu)
+        : batch(nullptr),
+          callback(nullptr),
+          sync(false),
+          done(false),
+          next(nullptr),
+          cv(mu) {}
+
+    Status status;
+    WriteBatch* batch;
+    WriteCallback* callback;
+    Writer* next;
+    bool sync;
+    bool done;
+    port::CondVar cv;
+  };
+
+  struct DBImpl::WriterGroup {
+    WriterGroup() : first_leader(nullptr), last_writer(nullptr) {}
+    Writer* first_leader;
+    Writer* last_writer;
+  };
+#+end_src
+   
+我们用BuildWriterGroup替代原来的BuildBatchGroup：
+#+begin_src cpp
+  void DBImpl::BuildWriterGroup(WriterGroup* group) {
+    mutex_.AssertHeld();
+    assert(!writers_.empty());
+    Writer* cur_leader = writers_.front();
+    Writer* prev_leader = nullptr;
+    group->first_leader = cur_leader;
+    bool sync = cur_leader->sync;
+    assert(cur_leader->batch != nullptr);
+
+    size_t size = WriteBatchInternal::ByteSize(cur_leader->batch);
+
+    // Allow the group to grow up to a maximum size, but if the
+    // original write is small, limit the growth so we do not slow
+    // down the small write too much.
+    size_t max_size = 1 << 20;
+    if (size <= (128 << 10)) {
+      max_size = size + (128 << 10);
+    }
+
+    group->last_writer = cur_leader;
+    if (cur_leader->callback && !cur_leader->callback->AllowGrouping()) {
+      return;
+    }
+    bool prev_have_callback = (cur_leader->callback != nullptr);
+    std::deque<Writer*>::iterator iter = writers_.begin();
+    ++iter;  // Advance past "first"
+    for (; iter != writers_.end(); ++iter) {
+      Writer* w = *iter;
+
+      if (w->sync && !sync) {
+        // Do not include a sync write into a batch handled by a non-sync write.
+        break;
+      }
+
+      if (w->callback && !w->callback->AllowGrouping()) {
+        break;
+      }
+
+      if (w->callback != nullptr || prev_have_callback) {
+        /*
+         ,* w has callback OR
+         ,* w has no callback but prev writer has callback.
+         ,*
+         ,* We need to switch to a new leader.
+         ,*/
+        prev_leader = cur_leader;
+        cur_leader->next = w;
+        cur_leader = w;
+        prev_have_callback = (w->callback != nullptr);
+      }
+
+      if (w->batch != nullptr) {
+        size += WriteBatchInternal::ByteSize(w->batch);
+        if (size > max_size) {
+          // Do not make batch too big
+          if (cur_leader == w) {
+            // we just switched to a new leader, but the new leader
+            // will not be included in the writer group.
+            prev_leader->next = nullptr;
+          }
+          break;
+        }
+
+        if (cur_leader->batch == nullptr) {
+          cur_leader->next = w;
+          cur_leader = w;
+        }
+
+        if (w != cur_leader) {
+          WriteBatchInternal::Append(cur_leader->batch, w->batch);
+        }
+      }
+      group->last_writer = w;
+    }
+  }
+#+end_src
+
+** 修改后的写入流程
+
+1. 构造Writer，设置Writer的batch和callback，放入DBImpl::writers_中，然后wait()
+2. writers_的队首取得写入权
+3. BuildWriterGroup构建writer group
+4. 从first leader开始，遍历writer group的所有batch group：
+   - 如果leader有callback，则调用callback。若Status::OK，继续；否则跳转到4.4
+   - 若leader的batch为nullptr，continue。
+   - 将当前leader的batch写入WAL和MemTable。
+   - 通知该batch group的所有writer已完成。
+   - 继续下一个leader
+
+#+begin_src cpp
+  Status DBImpl::Write(const WriteOptions& options, WriteBatch* updates,
+                       WriteCallback* callback) {
+    Writer w(&mutex_);
+    w.batch = updates;
+    w.sync = options.sync;
+    w.done = false;
+    w.callback = callback;
+
+    MutexLock l(&mutex_);
+    writers_.push_back(&w);
+    while (!w.done && &w != writers_.front()) {
+      w.cv.Wait();
+    }
+    if (w.done) {
+      return w.status;
+    }
+
+    // &w == writers_.front() is TRUE
+    // May temporarily unlock and wait.
+    Status status = MakeRoomForWrite(updates == nullptr);
+    uint64_t last_sequence = versions_->LastSequence();
+    Writer* last_writer = &w;
+    if (status.ok() && updates != nullptr) {  // nullptr batch is for compactions
+      WriterGroup writer_group;
+      Writer* cur_leader;
+      WriteBatch* write_batch;
+      BuildWriterGroup(&writer_group);
+      assert(writer_group.first_leader == &w);
+
+      for (cur_leader = writer_group.first_leader; cur_leader != nullptr;
+           cur_leader = cur_leader->next) {
+        mutex_.Unlock();
+        write_batch = cur_leader->batch;
+
+        if (cur_leader->callback != nullptr &&
+            !cur_leader->callback->Callback(this).ok()) {
+          mutex_.Lock();
+          goto NOTIFY;
+        }
+
+        if (write_batch == nullptr) {
+          mutex_.Lock();
+          goto NOTIFY;
+        }
+
+        WriteBatchInternal::SetSequence(write_batch, last_sequence + 1);
+        last_sequence += WriteBatchInternal::Count(write_batch);
+        {
+          status = log_->AddRecord(WriteBatchInternal::Contents(write_batch));
+          bool sync_error = false;
+          if (status.ok() && options.sync) {
+            // TODO: we may sync logfile many times within a sync WriteGroup
+            status = logfile_->Sync();
+            if (!status.ok()) {
+              sync_error = true;
+            }
+          }
+          if (status.ok()) {
+            status = WriteBatchInternal::InsertInto(write_batch, mem_);
+          }
+
+          mutex_.Lock();
+          if (sync_error) {
+            // The state of the log file is indeterminate: the log record we
+            // just added may or may not show up when the DB is re-opened.
+            // So we force the DB into a mode where all future writes fail.
+            RecordBackgroundError(status);
+          }
+        }
+        if (write_batch == tmp_batch_) tmp_batch_->Clear();
+
+        versions_->SetLastSequence(last_sequence);
+
+      NOTIFY:
+        while (true) {
+          Writer* ready = writers_.front();
+          writers_.pop_front();
+          if (ready != cur_leader->next && ready != &w) {
+            ready->status = status;
+            ready->done = true;
+            ready->cv.Signal();
+          }
+          if (ready == cur_leader->next || ready == last_writer) {
+            break;
+          }
+        }
+      }
+    } else {
+      assert(writers_.front() == &w);
+      writers_.pop_front();
+    }
+
+    // Notify new head of write queue
+    if (!writers_.empty()) {
+      writers_.front()->cv.Signal();
+    }
+
+    return status;
+  }
+#+end_src
+
+要注意的是在调用callback时，我们应该释放mutex，因为用户可能在callback
+里查询数据库，但WriteCallback不允许用户再次在Callback中同步调用Write，否则会产生死锁。用户可以在Callback中另起一个线程去Write
+
+** Example usage
+#+begin_src cpp
+  class CustomWriteCallback: public WriteCallback {
+    public:
+    CustomWriteCallback() = default;
+    ~CustomWriteCallback() override = default;
+
+    Status Callback(DB* db) override {
+      std::string value;
+      Status s = db->Get(ReadOption(), key, &value);
+      if(s.ok() && value==expected) {
+        return Status::OK();
+      }
+      return Status::IOError("not found");
+    }
+
+    bool AllowGrouping() const { return true; }
+
+    std::string key;
+    std::string expected;
+  }
+
+  CustomWriteCallback cb;
+  WriteBatch wb;
+  cb.key = "key";
+  cb.expected = "val0";
+  wb.Put("key", "val1");
+
+  db->Write(WriteOption(), &wb, &cb);
+#+end_src

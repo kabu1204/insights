@@ -1,0 +1,483 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2023-04-13 Thu 20:18 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>给Leveldb添加WriteCallback</title>
+<meta name="author" content="于承业" />
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" type="text/css" href="latexcss/latexcss.css" />
+<link rel="stylesheet" type="text/css" href="../latexcss/latexcss.css" />
+<link rel="alternate stylesheet" type="https://orgmode.org/resources/style/org-demo.min.css" />
+<link rel="alternate stylesheet" type="../latexcss/latexcss.css" />
+<script src="latexcss/org-info.js">
+// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
+// @license-end
+</script>
+
+<script>
+// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
+org_html_manager.set("TOC_DEPTH", "3");
+org_html_manager.set("LINK_HOME", "");
+org_html_manager.set("LINK_UP", "");
+org_html_manager.set("LOCAL_TOC", "1");
+org_html_manager.set("VIEW_BUTTONS", "0");
+org_html_manager.set("MOUSE_HINT", "underline");
+org_html_manager.set("FIXED_TOC", "0");
+org_html_manager.set("TOC", "1");
+org_html_manager.set("VIEW", "info");
+org_html_manager.setup();  // activate after the parameters are set
+// @license-end
+</script>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">给Leveldb添加WriteCallback</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org7b84723">1. Introduction</a></li>
+<li><a href="#org6cb5bd8">2. 为什么需要Callback</a></li>
+<li><a href="#org042e274">3. Callback带来的问题</a></li>
+<li><a href="#orgc4f54b6">4. WriterGroup</a>
+<ul>
+<li><a href="#org61574f1">4.1. 修改后的写入流程</a></li>
+<li><a href="#orgcc7f425">4.2. Example usage</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<p>
+<a href="./index.html">Back to index</a>
+</p>
+
+<div id="outline-container-org7b84723" class="outline-2">
+<h2 id="org7b84723"><span class="section-number-2">1.</span> Introduction</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+最近，在leveldb的基础上实现键值分离，提高小key大value下的写性能，后续会专门写几篇post介绍实现原理。
+</p>
+
+<p>
+其中，我们在对ValueLog进行垃圾回收时，(1)先将依然有效的value写到新的ValueLog中，然后需要(2)将这些value新的位置&lt;key, vptr&gt;批量写回LSMTree。
+</p>
+
+<p>
+这其中存在一个问题：如果在我们完成了(1)，这时用户做了update，(2)就会将用户的update给覆盖，导致不一致。
+</p>
+
+<p>
+我们肯定不能在GC的时候将整个DB锁住，因为GC太耗费时间了。做法是，整个GC过程不加锁，在(2)最终写入WAL和LSM之前，最后检查一下将要写回的&lt;key, vptr&gt;，是否被用户覆盖。因为这时我们已经在DBImpl::Write内部了，且leveldb同时只有一个writer可以执行，只要最终检查通过，我们就可以写回。
+</p>
+
+<p>
+流程就是：
+</p>
+<ol class="org-ol">
+<li>选取某个VLOG</li>
+<li>遍历VLOG中的&lt;K,V&gt;，回查LSMTree，将有效的&lt;K, V&gt;放入buffer，无效的丢弃。</li>
+<li>将buffer写入新的VLOG，与此同时获得了这些有效的&lt;K,V&gt;的新位置vptr</li>
+<li>将&lt;K, vptr&gt;写入LSMTree（DBImpl::Write()：
+<ul class="org-ul">
+<li>获得锁</li>
+<li>再次通过DBImpl::Get回查</li>
+<li>回查有效，继续写入WAL和MemTable；回查失败，直接返回</li>
+</ul></li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-org6cb5bd8" class="outline-2">
+<h2 id="org6cb5bd8"><span class="section-number-2">2.</span> 为什么需要Callback</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+从上面的流程可以看到，我们需要在DBImpl内部，写WAL和MemTable前执行我们的回查逻辑。因此我们需要一种Callback机制。Callback返回Status，如果ok，继续写入，否则返回。
+</p>
+
+<p>
+其实RocksDB就有很多Callback，不仅在写WAL前有，在写完WAL和写MemTable前也有，写完MemTable也有Callback，做Flush之前也有Callback。
+</p>
+
+<p>
+但我们不需要那么多且复杂的Callback。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org042e274" class="outline-2">
+<h2 id="org042e274"><span class="section-number-2">3.</span> Callback带来的问题</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+leveldb在Write中，会将多个writer的WriteBatch组合成BatchGroup，由当前获得写入权的writer批量写入，然后再通知被阻塞的writer写入完成。
+</p>
+
+<p>
+但加入了WriteCallback，我们就没法简单地将不同writer的WriteBatch做grouping了。
+</p>
+
+<p>
+一个writer的WriteBatch和WriteCallback是绑定的。它的callback执行结果仅代表它的batch能否被写入。对于指定了callback的writer，它们的batch是不能做grouping的。
+</p>
+
+<ol class="org-ol">
+<li>对于没有指定callback的writer，它们之间可以做batch grouping</li>
+<li>对于指定了callback的writer，它需要单独调用callback和写入batch</li>
+</ol>
+
+<p>
+这就意味着，我们GC时回写&lt;k, vptr&gt;没法batch，只能一个一个callback去查再写。每次我们都要加锁解锁，降低吞吐量。
+</p>
+
+<p>
+为此我们需要改造一些grouping的形式，比起batch group，我们需要writer group。
+</p>
+
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #0000cd;">class</span> <span style="color: #228b22;">LEVELDB_EXPORT</span> <span style="color: #228b22;">WriteCallback</span> {
+ <span style="color: #0000cd;">public</span>:
+  <span style="color: #0000cd;">virtual</span> ~<span style="color: #ff0000;">WriteCallback</span>(){};
+
+  <span style="color: #0000cd;">virtual</span> <span style="color: #228b22;">Status</span> <span style="color: #ff0000;">Callback</span>(<span style="color: #228b22;">DB</span>* <span style="color: #a0522d;">db</span>) = 0;
+
+  <span style="color: #b22222;">// </span><span style="color: #b22222;">allow writer grouping</span>
+  <span style="color: #0000cd;">virtual</span> <span style="color: #228b22;">bool</span> <span style="color: #ff0000;">AllowGrouping</span>() <span style="color: #0000cd;">const</span> { <span style="color: #0000cd;">return</span> <span style="color: #00006DE06DE0;">false</span>; }
+};
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orgc4f54b6" class="outline-2">
+<h2 id="orgc4f54b6"><span class="section-number-2">4.</span> WriterGroup</h2>
+<div class="outline-text-2" id="text-4">
+<p>
+有了WriteCallback，我们不能简单地group batch，但我们依然可以让当前writer代理等待中的writer进行写入。
+</p>
+
+<p>
+WriterGroup的设计：
+</p>
+<ol class="org-ol">
+<li>一次DBImpl::Write写入一个WriterGroup</li>
+<li>一个WriterGroup包含多个batch group</li>
+<li>WriterGroup包含多个leader，leader是batch group的第一个writer</li>
+<li>第一个leader称为first leader，它就是当前取得了写入权的writer</li>
+<li>写入WAL和MemTable的基本单位就是batch group</li>
+</ol>
+
+<p>
+Group的原则：
+</p>
+<ol class="org-ol">
+<li>有callback的writer单独成一个batch group，自己是leader。</li>
+<li>连续的多个无callback的writer成一个batch group，第一个writer是leader。该batch group的其它writer的batch被append到leader的batch中。</li>
+<li>无batch（batch==nullptr）的writer单独成batch group，自己是leader。</li>
+<li>writer group的总batch size大于预设，停止构造； 或已经包含了等待队列writers_中的所有writer</li>
+<li>所有leader串成链表</li>
+</ol>
+
+<p>
+WriterGroup:
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #b22222;">// </span><span style="color: #b22222;">Information kept for every waiting writer</span>
+<span style="color: #b22222;">/*</span>
+<span style="color: #b22222;"> * db-&gt;writers_: [w0|w1|w2|w3|w4|w5|w6|..|..]</span>
+<span style="color: #b22222;"> *</span>
+<span style="color: #b22222;"> * After BuildWriterGroup:</span>
+<span style="color: #b22222;"> *  [ w0 |w1|w2|  w3  |w4|w5|w6|w7|w8]</span>
+<span style="color: #b22222;"> *    |          &#8593; |            &#8593;</span>
+<span style="color: #b22222;"> *    |  w0.next | |   w3.next  |</span>
+<span style="color: #b22222;"> *    |__________| |____________|</span>
+<span style="color: #b22222;"> *</span>
+<span style="color: #b22222;"> * w0.batch also holds the contents of w1.batch and w2.batch</span>
+<span style="color: #b22222;"> * w3.batch holds the contents of w3-w6.batch</span>
+<span style="color: #b22222;"> *</span>
+<span style="color: #b22222;"> * w0 and w3 are called leaders.</span>
+<span style="color: #b22222;"> * w0 is the first leader of the WriteGroup.</span>
+<span style="color: #b22222;"> */</span>
+<span style="color: #0000cd;">struct</span> <span style="color: #00006DE06DE0;">DBImpl</span>::<span style="color: #228b22;">Writer</span> {
+  <span style="color: #0000cd;">explicit</span> <span style="color: #ff0000;">Writer</span>(<span style="color: #00006DE06DE0;">port</span>::<span style="color: #228b22;">Mutex</span>* <span style="color: #a0522d;">mu</span>)
+      : batch(<span style="color: #00006DE06DE0;">nullptr</span>),
+        callback(<span style="color: #00006DE06DE0;">nullptr</span>),
+        sync(<span style="color: #00006DE06DE0;">false</span>),
+        done(<span style="color: #00006DE06DE0;">false</span>),
+        next(<span style="color: #00006DE06DE0;">nullptr</span>),
+        cv(mu) {}
+
+  <span style="color: #228b22;">Status</span> <span style="color: #a0522d;">status</span>;
+  <span style="color: #228b22;">WriteBatch</span>* <span style="color: #a0522d;">batch</span>;
+  <span style="color: #228b22;">WriteCallback</span>* <span style="color: #a0522d;">callback</span>;
+  <span style="color: #228b22;">Writer</span>* <span style="color: #a0522d;">next</span>;
+  <span style="color: #228b22;">bool</span> <span style="color: #a0522d;">sync</span>;
+  <span style="color: #228b22;">bool</span> <span style="color: #a0522d;">done</span>;
+  <span style="color: #00006DE06DE0;">port</span>::<span style="color: #228b22;">CondVar</span> <span style="color: #a0522d;">cv</span>;
+};
+
+<span style="color: #0000cd;">struct</span> <span style="color: #00006DE06DE0;">DBImpl</span>::<span style="color: #228b22;">WriterGroup</span> {
+  <span style="color: #ff0000;">WriterGroup</span>() : first_leader(<span style="color: #00006DE06DE0;">nullptr</span>), last_writer(<span style="color: #00006DE06DE0;">nullptr</span>) {}
+  <span style="color: #228b22;">Writer</span>* <span style="color: #a0522d;">first_leader</span>;
+  <span style="color: #228b22;">Writer</span>* <span style="color: #a0522d;">last_writer</span>;
+};
+</pre>
+</div>
+
+<p>
+我们用BuildWriterGroup替代原来的BuildBatchGroup：
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #228b22;">void</span> <span style="color: #00006DE06DE0;">DBImpl</span>::<span style="color: #ff0000;">BuildWriterGroup</span>(<span style="color: #228b22;">WriterGroup</span>* <span style="color: #a0522d;">group</span>) {
+  mutex_.AssertHeld();
+  assert(!writers_.empty());
+  <span style="color: #228b22;">Writer</span>* <span style="color: #a0522d;">cur_leader</span> = writers_.front();
+  <span style="color: #228b22;">Writer</span>* <span style="color: #a0522d;">prev_leader</span> = <span style="color: #00006DE06DE0;">nullptr</span>;
+  group-&gt;first_leader = cur_leader;
+  <span style="color: #228b22;">bool</span> <span style="color: #a0522d;">sync</span> = cur_leader-&gt;sync;
+  assert(cur_leader-&gt;batch != <span style="color: #00006DE06DE0;">nullptr</span>);
+
+  <span style="color: #228b22;">size_t</span> <span style="color: #a0522d;">size</span> = <span style="color: #00006DE06DE0;">WriteBatchInternal</span>::ByteSize(cur_leader-&gt;batch);
+
+  <span style="color: #b22222;">// </span><span style="color: #b22222;">Allow the group to grow up to a maximum size, but if the</span>
+  <span style="color: #b22222;">// </span><span style="color: #b22222;">original write is small, limit the growth so we do not slow</span>
+  <span style="color: #b22222;">// </span><span style="color: #b22222;">down the small write too much.</span>
+  <span style="color: #228b22;">size_t</span> <span style="color: #a0522d;">max_size</span> = 1 &lt;&lt; 20;
+  <span style="color: #0000cd;">if</span> (size &lt;= (128 &lt;&lt; 10)) {
+    max_size = size + (128 &lt;&lt; 10);
+  }
+
+  group-&gt;last_writer = cur_leader;
+  <span style="color: #0000cd;">if</span> (cur_leader-&gt;callback &amp;&amp; !cur_leader-&gt;callback-&gt;AllowGrouping()) {
+    <span style="color: #0000cd;">return</span>;
+  }
+  <span style="color: #228b22;">bool</span> <span style="color: #a0522d;">prev_have_callback</span> = (cur_leader-&gt;callback != <span style="color: #00006DE06DE0;">nullptr</span>);
+  <span style="color: #00006DE06DE0;">std</span>::<span style="color: #00006DE06DE0;">deque</span>&lt;<span style="color: #228b22;">Writer</span>*&gt;::<span style="color: #228b22;">iterator</span> <span style="color: #a0522d;">iter</span> = writers_.begin();
+  ++iter;  <span style="color: #b22222;">// </span><span style="color: #b22222;">Advance past "first"</span>
+  <span style="color: #0000cd;">for</span> (; iter != writers_.end(); ++iter) {
+    <span style="color: #228b22;">Writer</span>* <span style="color: #a0522d;">w</span> = *iter;
+
+    <span style="color: #0000cd;">if</span> (w-&gt;sync &amp;&amp; !sync) {
+      <span style="color: #b22222;">// </span><span style="color: #b22222;">Do not include a sync write into a batch handled by a non-sync write.</span>
+      <span style="color: #0000cd;">break</span>;
+    }
+
+    <span style="color: #0000cd;">if</span> (w-&gt;callback &amp;&amp; !w-&gt;callback-&gt;AllowGrouping()) {
+      <span style="color: #0000cd;">break</span>;
+    }
+
+    <span style="color: #0000cd;">if</span> (w-&gt;callback != <span style="color: #00006DE06DE0;">nullptr</span> || prev_have_callback) {
+      <span style="color: #b22222;">/*</span>
+<span style="color: #b22222;">       * w has callback OR</span>
+<span style="color: #b22222;">       * w has no callback but prev writer has callback.</span>
+<span style="color: #b22222;">       *</span>
+<span style="color: #b22222;">       * We need to switch to a new leader.</span>
+<span style="color: #b22222;">       */</span>
+      prev_leader = cur_leader;
+      cur_leader-&gt;next = w;
+      cur_leader = w;
+      prev_have_callback = (w-&gt;callback != <span style="color: #00006DE06DE0;">nullptr</span>);
+    }
+
+    <span style="color: #0000cd;">if</span> (w-&gt;batch != <span style="color: #00006DE06DE0;">nullptr</span>) {
+      size += <span style="color: #00006DE06DE0;">WriteBatchInternal</span>::ByteSize(w-&gt;batch);
+      <span style="color: #0000cd;">if</span> (size &gt; max_size) {
+        <span style="color: #b22222;">// </span><span style="color: #b22222;">Do not make batch too big</span>
+        <span style="color: #0000cd;">if</span> (cur_leader == w) {
+          <span style="color: #b22222;">// </span><span style="color: #b22222;">we just switched to a new leader, but the new leader</span>
+          <span style="color: #b22222;">// </span><span style="color: #b22222;">will not be included in the writer group.</span>
+          prev_leader-&gt;next = <span style="color: #00006DE06DE0;">nullptr</span>;
+        }
+        <span style="color: #0000cd;">break</span>;
+      }
+
+      <span style="color: #0000cd;">if</span> (cur_leader-&gt;batch == <span style="color: #00006DE06DE0;">nullptr</span>) {
+        cur_leader-&gt;next = w;
+        cur_leader = w;
+      }
+
+      <span style="color: #0000cd;">if</span> (w != cur_leader) {
+        <span style="color: #00006DE06DE0;">WriteBatchInternal</span>::Append(cur_leader-&gt;batch, w-&gt;batch);
+      }
+    }
+    group-&gt;last_writer = w;
+  }
+}
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org61574f1" class="outline-3">
+<h3 id="org61574f1"><span class="section-number-3">4.1.</span> 修改后的写入流程</h3>
+<div class="outline-text-3" id="text-4-1">
+<ol class="org-ol">
+<li>构造Writer，设置Writer的batch和callback，放入DBImpl::writers_中，然后wait()</li>
+<li>writers_的队首取得写入权</li>
+<li>BuildWriterGroup构建writer group</li>
+<li>从first leader开始，遍历writer group的所有batch group：
+<ul class="org-ul">
+<li>如果leader有callback，则调用callback。若Status::OK，继续；否则跳转到4.4</li>
+<li>若leader的batch为nullptr，continue。</li>
+<li>将当前leader的batch写入WAL和MemTable。</li>
+<li>通知该batch group的所有writer已完成。</li>
+<li>继续下一个leader</li>
+</ul></li>
+</ol>
+
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #228b22;">Status</span> <span style="color: #00006DE06DE0;">DBImpl</span>::<span style="color: #ff0000;">Write</span>(<span style="color: #0000cd;">const</span> <span style="color: #228b22;">WriteOptions</span>&amp; <span style="color: #a0522d;">options</span>, <span style="color: #228b22;">WriteBatch</span>* <span style="color: #a0522d;">updates</span>,
+                     <span style="color: #228b22;">WriteCallback</span>* <span style="color: #a0522d;">callback</span>) {
+  <span style="color: #228b22;">Writer</span> <span style="color: #a0522d;">w</span>(&amp;mutex_);
+  w.batch = updates;
+  w.sync = options.sync;
+  w.done = <span style="color: #00006DE06DE0;">false</span>;
+  w.callback = callback;
+
+  <span style="color: #228b22;">MutexLock</span> <span style="color: #a0522d;">l</span>(&amp;mutex_);
+  writers_.push_back(&amp;w);
+  <span style="color: #0000cd;">while</span> (!w.done &amp;&amp; &amp;w != writers_.front()) {
+    w.cv.Wait();
+  }
+  <span style="color: #0000cd;">if</span> (w.done) {
+    <span style="color: #0000cd;">return</span> w.status;
+  }
+
+  <span style="color: #b22222;">// </span><span style="color: #b22222;">&amp;w == writers_.front() is TRUE</span>
+  <span style="color: #b22222;">// </span><span style="color: #b22222;">May temporarily unlock and wait.</span>
+  <span style="color: #228b22;">Status</span> <span style="color: #a0522d;">status</span> = MakeRoomForWrite(updates == <span style="color: #00006DE06DE0;">nullptr</span>);
+  <span style="color: #228b22;">uint64_t</span> <span style="color: #a0522d;">last_sequence</span> = versions_-&gt;LastSequence();
+  <span style="color: #228b22;">Writer</span>* <span style="color: #a0522d;">last_writer</span> = &amp;w;
+  <span style="color: #0000cd;">if</span> (status.ok() &amp;&amp; updates != <span style="color: #00006DE06DE0;">nullptr</span>) {  <span style="color: #b22222;">// </span><span style="color: #b22222;">nullptr batch is for compactions</span>
+    <span style="color: #228b22;">WriterGroup</span> <span style="color: #a0522d;">writer_group</span>;
+    <span style="color: #228b22;">Writer</span>* <span style="color: #a0522d;">cur_leader</span>;
+    <span style="color: #228b22;">WriteBatch</span>* <span style="color: #a0522d;">write_batch</span>;
+    BuildWriterGroup(&amp;writer_group);
+    assert(writer_group.first_leader == &amp;w);
+
+    <span style="color: #0000cd;">for</span> (cur_leader = writer_group.first_leader; cur_leader != <span style="color: #00006DE06DE0;">nullptr</span>;
+         cur_leader = cur_leader-&gt;next) {
+      mutex_.Unlock();
+      write_batch = cur_leader-&gt;batch;
+
+      <span style="color: #0000cd;">if</span> (cur_leader-&gt;callback != <span style="color: #00006DE06DE0;">nullptr</span> &amp;&amp;
+          !cur_leader-&gt;callback-&gt;Callback(<span style="color: #0000cd;">this</span>).ok()) {
+        mutex_.Lock();
+        <span style="color: #0000cd;">goto</span> <span style="color: #00006DE06DE0;">NOTIFY</span>;
+      }
+
+      <span style="color: #0000cd;">if</span> (write_batch == <span style="color: #00006DE06DE0;">nullptr</span>) {
+        mutex_.Lock();
+        <span style="color: #0000cd;">goto</span> <span style="color: #00006DE06DE0;">NOTIFY</span>;
+      }
+
+      <span style="color: #00006DE06DE0;">WriteBatchInternal</span>::SetSequence(write_batch, last_sequence + 1);
+      last_sequence += <span style="color: #00006DE06DE0;">WriteBatchInternal</span>::Count(write_batch);
+      {
+        status = log_-&gt;AddRecord(<span style="color: #00006DE06DE0;">WriteBatchInternal</span>::Contents(write_batch));
+        <span style="color: #228b22;">bool</span> <span style="color: #a0522d;">sync_error</span> = <span style="color: #00006DE06DE0;">false</span>;
+        <span style="color: #0000cd;">if</span> (status.ok() &amp;&amp; options.sync) {
+          <span style="color: #b22222;">// </span><span style="color: #b22222;">TODO: we may sync logfile many times within a sync WriteGroup</span>
+          status = logfile_-&gt;Sync();
+          <span style="color: #0000cd;">if</span> (!status.ok()) {
+            sync_error = <span style="color: #00006DE06DE0;">true</span>;
+          }
+        }
+        <span style="color: #0000cd;">if</span> (status.ok()) {
+          status = <span style="color: #00006DE06DE0;">WriteBatchInternal</span>::InsertInto(write_batch, mem_);
+        }
+
+        mutex_.Lock();
+        <span style="color: #0000cd;">if</span> (sync_error) {
+          <span style="color: #b22222;">// </span><span style="color: #b22222;">The state of the log file is indeterminate: the log record we</span>
+          <span style="color: #b22222;">// </span><span style="color: #b22222;">just added may or may not show up when the DB is re-opened.</span>
+          <span style="color: #b22222;">// </span><span style="color: #b22222;">So we force the DB into a mode where all future writes fail.</span>
+          RecordBackgroundError(status);
+        }
+      }
+      <span style="color: #0000cd;">if</span> (write_batch == tmp_batch_) tmp_batch_-&gt;Clear();
+
+      versions_-&gt;SetLastSequence(last_sequence);
+
+    <span style="color: #00006DE06DE0;">NOTIFY</span>:
+      <span style="color: #0000cd;">while</span> (<span style="color: #00006DE06DE0;">true</span>) {
+        <span style="color: #228b22;">Writer</span>* <span style="color: #a0522d;">ready</span> = writers_.front();
+        writers_.pop_front();
+        <span style="color: #0000cd;">if</span> (ready != cur_leader-&gt;next &amp;&amp; ready != &amp;w) {
+          ready-&gt;status = status;
+          ready-&gt;done = <span style="color: #00006DE06DE0;">true</span>;
+          ready-&gt;cv.Signal();
+        }
+        <span style="color: #0000cd;">if</span> (ready == cur_leader-&gt;next || ready == last_writer) {
+          <span style="color: #0000cd;">break</span>;
+        }
+      }
+    }
+  } <span style="color: #0000cd;">else</span> {
+    assert(writers_.front() == &amp;w);
+    writers_.pop_front();
+  }
+
+  <span style="color: #b22222;">// </span><span style="color: #b22222;">Notify new head of write queue</span>
+  <span style="color: #0000cd;">if</span> (!writers_.empty()) {
+    writers_.front()-&gt;cv.Signal();
+  }
+
+  <span style="color: #0000cd;">return</span> status;
+}
+</pre>
+</div>
+
+<p>
+要注意的是在调用callback时，我们应该释放mutex，因为用户可能在callback
+里查询数据库，但WriteCallback不允许用户再次在Callback中同步调用Write，否则会产生死锁。用户可以在Callback中另起一个线程去Write
+</p>
+</div>
+</div>
+
+<div id="outline-container-orgcc7f425" class="outline-3">
+<h3 id="orgcc7f425"><span class="section-number-3">4.2.</span> Example usage</h3>
+<div class="outline-text-3" id="text-4-2">
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #0000cd;">class</span> <span style="color: #228b22;">CustomWriteCallback</span>: <span style="color: #0000cd;">public</span> <span style="color: #228b22;">WriteCallback</span> {
+  <span style="color: #0000cd;">public</span>:
+  <span style="color: #ff0000;">CustomWriteCallback</span>() = <span style="color: #0000cd;">default</span>;
+  ~<span style="color: #ff0000;">CustomWriteCallback</span>() <span style="color: #0000cd;">override</span> = <span style="color: #0000cd;">default</span>;
+
+  <span style="color: #228b22;">Status</span> <span style="color: #ff0000;">Callback</span>(<span style="color: #228b22;">DB</span>* <span style="color: #a0522d;">db</span>) <span style="color: #0000cd;">override</span> {
+    <span style="color: #00006DE06DE0;">std</span>::<span style="color: #228b22;">string</span> <span style="color: #a0522d;">value</span>;
+    <span style="color: #228b22;">Status</span> <span style="color: #a0522d;">s</span> = db-&gt;Get(ReadOption(), key, &amp;value);
+    <span style="color: #0000cd;">if</span>(s.ok() &amp;&amp; value==expected) {
+      <span style="color: #0000cd;">return</span> <span style="color: #00006DE06DE0;">Status</span>::OK();
+    }
+    <span style="color: #0000cd;">return</span> <span style="color: #00006DE06DE0;">Status</span>::IOError(<span style="color: #8b008b;">"not found"</span>);
+  }
+
+  <span style="color: #228b22;">bool</span> <span style="color: #ff0000;">AllowGrouping</span>() <span style="color: #0000cd;">const</span> { <span style="color: #0000cd;">return</span> <span style="color: #00006DE06DE0;">true</span>; }
+
+  <span style="color: #00006DE06DE0;">std</span>::<span style="color: #228b22;">string</span> <span style="color: #a0522d;">key</span>;
+  <span style="color: #00006DE06DE0;">std</span>::<span style="color: #228b22;">string</span> <span style="color: #a0522d;">expected</span>;
+}
+
+<span style="color: #228b22;">CustomWriteCallback</span> <span style="color: #a0522d;">cb</span>;
+<span style="color: #228b22;">WriteBatch</span> <span style="color: #a0522d;">wb</span>;
+cb.key = <span style="color: #8b008b;">"key"</span>;
+cb.expected = <span style="color: #8b008b;">"val0"</span>;
+wb.Put(<span style="color: #8b008b;">"key"</span>, <span style="color: #8b008b;">"val1"</span>);
+
+db-&gt;Write(WriteOption(), &amp;wb, &amp;cb);
+</pre>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: 于承业</p>
+<p class="date">Created: 2023-04-13 Thu 20:18</p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

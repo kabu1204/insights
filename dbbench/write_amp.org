@@ -1,25 +1,29 @@
 #+TITLE: write amplification
+#+HTML_MATHJAX: scale:20
 #+SETUPFILE: ../latexcss/latexcss.theme
+#+LATEX_HEADER: \usepackage[margin=0.2in]{geometry}
 
 * Write amplification
 For WiredTiger: run time is 3600 sec.
+
 For RocksDB: run time is the time of loading ~25GB data. (total compaction R/W is about 90GB/110GB )
 
+#+ATTR_LATEX: :environment longtable
 #+NAME: write-amp
 | Run time | WT-32B | WT-128B | WT-256B | WT-512B | WT-1KB | RocksDB-32B | RocksDB-128B | RocksDB-256B | RocksDB-512B | RocksDB-1KB |
 |----------+--------+---------+---------+---------+--------+-------------+--------------+--------------+--------------+-------------|
-|       2% |  614.1 |   141.5 |    83.3 |    45.2 |   84.7 |         3.1 |          2.5 |          2.1 |          3.1 |         3.1 |
-|       5% |  997.1 |   181.3 |   101.3 |    51.0 |   90.6 |         4.1 |          3.0 |          4.4 |          3.2 |         4.1 |
-|      10% | 1043.6 |   182.0 |   101.4 |    51.2 |   93.5 |        10.4 |          4.1 |          4.1 |          4.9 |         5.3 |
-|      20% | 1055.6 |   184.3 |   101.5 |    51.0 |   91.0 |         3.5 |          5.8 |          4.6 |          1.0 |         1.0 |
-|      30% | 1161.7 |   180.0 |   100.9 |    51.1 |   90.0 |         6.8 |          7.0 |         10.7 |          1.0 |         5.2 |
-|      40% | 1113.7 |   184.6 |   101.9 |    51.2 |   90.2 |         1.7 |          4.2 |          5.3 |          1.0 |         4.9 |
-|      50% | 1102.5 |   184.4 |   100.6 |    51.2 |   87.0 |        10.1 |          5.3 |          7.4 |          1.0 |         1.0 |
-|      60% | 1145.3 |   184.0 |   101.7 |    51.3 |   88.1 |        14.2 |          5.8 |          9.0 |          6.0 |         4.3 |
-|      70% | 1193.2 |   183.6 |   102.0 |    51.2 |   88.8 |        38.5 |         17.1 |          5.2 |         18.2 |         5.8 |
-|      80% | 1175.2 |   183.0 |   102.1 |    50.6 |   87.8 |        12.8 |         17.4 |          1.0 |          1.0 |         8.7 |
-|      90% | 1140.6 |   183.5 |   101.9 |    51.0 |   87.1 |        26.0 |          1.0 |         10.7 |          7.7 |        12.8 |
-|     100% | 1121.8 |   184.2 |   102.3 |    51.1 |   85.3 |         1.0 |         15.1 |          1.0 |          1.0 |        19.0 |
+|       2% |  614.1 |   141.5 |    83.3 |    45.2 |   84.7 |         4.8 |          2.1 |          1.7 |          2.4 |         3.7 |
+|       5% |  997.1 |   181.3 |   101.3 |    51.0 |   90.6 |         5.7 |          2.6 |          2.9 |          3.4 |         8.5 |
+|      10% | 1043.6 |   182.0 |   101.4 |    51.2 |   93.5 |        16.1 |          4.3 |         10.9 |          4.3 |         7.7 |
+|      20% | 1055.6 |   184.3 |   101.5 |    51.0 |   91.0 |         1.0 |          3.5 |          5.7 |          3.6 |         1.0 |
+|      30% | 1161.7 |   180.0 |   100.9 |    51.1 |   90.0 |         1.0 |          7.6 |          2.4 |          6.2 |        26.3 |
+|      40% | 1113.7 |   184.6 |   101.9 |    51.2 |   90.2 |         6.4 |          4.3 |          6.1 |          4.2 |         9.4 |
+|      50% | 1102.5 |   184.4 |   100.6 |    51.2 |   87.0 |         9.7 |          5.6 |          2.5 |          4.9 |         0.0 |
+|      60% | 1145.3 |   184.0 |   101.7 |    51.3 |   88.1 |         0.0 |          3.4 |          2.2 |          7.3 |         1.0 |
+|      70% | 1193.2 |   183.6 |   102.0 |    51.2 |   88.8 |        28.8 |          6.9 |          2.6 |          6.6 |         0.0 |
+|      80% | 1175.2 |   183.0 |   102.1 |    50.6 |   87.8 |        42.2 |          7.8 |          1.0 |         10.3 |        10.1 |
+|      90% | 1140.6 |   183.5 |   101.9 |    51.0 |   87.1 |         1.0 |         12.6 |          8.4 |          1.0 |         8.4 |
+|     100% | 1121.8 |   184.2 |   102.3 |    51.1 |   85.3 |        25.0 |          1.0 |         16.4 |         10.5 |        10.2 |
 
 #+begin_src gnuplot :var inputs=write-amp :colnames no :file write-amp.png :exports results
   reset
@@ -35,7 +39,7 @@ For RocksDB: run time is the time of loading ~25GB data. (total compaction R/W i
   y3 = 600.0
   y4 = 1200.0
 
-  set term pngcairo size 1600,1200 linewidth 3 font "Menlo,20"
+  set term pngcairo size 2000,1500 linewidth 3 font "Menlo,20"
 
   set xlabel "Run time(percentage)"
   set ylabel "Amplification factor(actual/useful)" offset screen 0,0.1
@@ -56,7 +60,8 @@ For RocksDB: run time is the time of loading ~25GB data. (total compaction R/W i
   set rmargin at screen rm
   set bmargin at screen bm
   set tmargin at screen bm + size*kk
-  plot for [i=3:11] inputs using 1:i ps 2 
+  plot for [i=7:11] inputs using 1:i:(i-7+23) lc variable pointtype 7 ps 2, \
+       for [i=3:6] inputs using 1:i:(i-2+23) lc variable pointtype 4 ps 2
 
   unset xtics
   unset xlabel
@@ -69,7 +74,7 @@ For RocksDB: run time is the time of loading ~25GB data. (total compaction R/W i
   set tmargin at screen bm + size + gap
   set yrange [y3:y4] # 600-1200
   set ytics 300
-  plot inputs using 1:2 lc 30 ps 2
+  plot inputs using 1:2 lc 23 pointtype 4 ps 2
 
   unset multiplot
 #+end_src
@@ -77,22 +82,71 @@ For RocksDB: run time is the time of loading ~25GB data. (total compaction R/W i
 #+RESULTS:
 [[file:write-amp.png]]
 
+** Overall
+#+NAME: wamp-overall
+| Record size(bytes) | WiredTiger | RocksDB |
+|--------------------+------------+---------|
+|                 32 |     1123.6 |     7.2 |
+|                128 |      182.5 |     4.8 |
+|                256 |      101.1 |     4.9 |
+|                512 |       51.1 |     4.7 |
+|               1024 |       88.4 |     4.7 |
+
+#+begin_src gnuplot :var inputs=wamp-overall :file wamp-overall.png
+  reset
+  unset key
+  set term pngcairo size 2000,1500 font "Menlo,20"
+  set title "Overall Write Amplification"
+  set boxwidth 0.6
+  set grid ytics linestyle 0
+  set style fill solid 0.20 border
+  set style data histograms
+  set style histogram clustered gap 1
+  set xlabel "Record size(Bytes)"
+  set ylabel "Amplification factor"
+  set key box width 2
+  set logscale y 2
+  plot inputs using 2:xtic(1) title "WiredTiger", \
+       '' using 3:xtic(1) title "RocksDB"
+#+end_src
+
+#+RESULTS:
+[[file:wamp-overall.png]]
+
 * Read amplification
+$\text{Read amplification} = \large{\frac{\text{size of value returned by }\texttt{Get()}}{\text{# of bytes read from filesystem}}}$
+
 Run time: 600 sec
 
 #+NAME: read-amp
 | Run time | WT-32B | WT-128B | WT-256B | WT-512B | WT-1KB | RocksDB-32B | RocksDB-128B | RocksDB-256B | RocksDB-512B | RocksDB-1KB |
 |----------+--------+---------+---------+---------+--------+-------------+--------------+--------------+--------------+-------------|
-|      10% |  834.5 |   135.4 |    73.8 |    37.0 |   70.7 |         7.8 |          6.9 |          6.4 |          4.8 |         3.1 |
-|      20% |  834.0 |   135.9 |    74.1 |    37.1 |   71.4 |         8.2 |          7.4 |          6.6 |          4.8 |         3.2 |
-|      30% |  835.9 |   135.9 |    74.4 |    37.6 |   70.7 |         8.4 |          7.5 |          6.6 |          4.8 |         3.2 |
-|      40% |  833.3 |   135.8 |    75.0 |    36.8 |   71.1 |         7.6 |          7.8 |          6.6 |          4.8 |         3.2 |
-|      50% |  834.5 |   135.3 |    74.6 |    36.5 |   70.7 |        37.2 |          6.5 |          6.6 |          4.8 |         3.2 |
-|      60% |  836.2 |   136.0 |    74.5 |    36.5 |   70.7 |       100.8 |          7.7 |          6.6 |          4.8 |         3.0 |
-|      70% |  835.7 |   135.4 |    74.4 |    36.5 |   71.0 |       100.8 |          7.9 |          6.4 |          4.9 |         3.0 |
-|      80% |  835.0 |   135.5 |    74.6 |    36.5 |   71.1 |       100.8 |          7.9 |          6.3 |          4.3 |         3.1 |
-|      90% |  844.0 |   135.1 |    74.9 |    36.5 |   71.0 |       100.8 |          7.9 |          6.5 |          4.5 |         3.1 |
-|     100% |  841.8 |   135.1 |    74.1 |    36.5 |   71.0 |       100.8 |          7.8 |          6.2 |          4.7 |         3.1 |
+|      10% |  834.5 |   135.4 |    73.8 |    37.0 |   70.7 |      1195.4 |        289.5 |        134.5 |         66.6 |        29.8 |
+|      20% |  834.0 |   135.9 |    74.1 |    37.1 |   71.4 |      1195.0 |        289.7 |        134.3 |         66.6 |        29.6 |
+|      30% |  835.9 |   135.9 |    74.4 |    37.6 |   70.7 |      1194.8 |        289.7 |        134.1 |         66.6 |        29.6 |
+|      40% |  833.3 |   135.8 |    75.0 |    36.8 |   71.1 |      1194.7 |        289.5 |        134.2 |         66.5 |        29.7 |
+|      50% |  834.5 |   135.3 |    74.6 |    36.5 |   70.7 |      1195.2 |        289.4 |        134.3 |         66.6 |        29.7 |
+|      60% |  836.2 |   136.0 |    74.5 |    36.5 |   70.7 |      1195.1 |        289.4 |        134.5 |         66.6 |        29.7 |
+|      70% |  835.7 |   135.4 |    74.4 |    36.5 |   71.0 |      1194.6 |        289.5 |        134.3 |         66.6 |        29.7 |
+|      80% |  835.0 |   135.5 |    74.6 |    36.5 |   71.1 |      1194.7 |        289.7 |        134.2 |         66.6 |        29.7 |
+|      90% |  844.0 |   135.1 |    74.9 |    36.5 |   71.0 |      1195.4 |        289.3 |        134.2 |         66.6 |        29.6 |
+|     100% |  841.8 |   135.1 |    74.1 |    36.5 |   71.0 |      1194.3 |        289.6 |        134.2 |         66.6 |        29.6 |
+#+TBLFM: 
+
+#+CAPTION: Load statistics. User write is total size of inserted records. FS read/write is total size of data read/write through filesystem syscall(read()/write()), mmap is disabled. Compaction read/write is the total size of input files/output files when performing LSM compaction.
+#+ATTR_LATEX: :align l|l|l|l|l|l|l
+| DB-RecordSize | User write(GB) | FS read(GB) | FS write | Compaction read(GB) | Compaction write | Thrpt(MB/s) |
+|---------------+----------------+-------------+----------+---------------------+------------------+-------------|
+| WT-32B        |           2.36 |     1838.10 |  1840.19 |                     |                  |        0.79 |
+| WT-128B       |           9.54 |     1742.43 |  1752.32 |                     |                  |        2.16 |
+| WT-256B       |           9.45 |      984.59 |   994.73 |                     |                  |        3.90 |
+| WT-512B       |           9.45 |      504.14 |   514.51 |                     |                  |        7.60 |
+| WT-1KB        |           9.54 |      890.54 |   900.36 |                     |                  |        4.18 |
+| RocksDB-32B   |          29.80 |      174.33 |   233.98 |              159.57 |           180.84 |        6.35 |
+| RocksDB-128B  |          17.88 |       77.32 |   116.37 |               69.24 |            87.92 |       16.22 |
+| RocksDB-256B  |          19.07 |       77.37 |   119.22 |               71.73 |            91.41 |       21.18 |
+| RocksDB-512B  |          19.55 |       74.02 |   115.83 |               68.66 |            88.23 |       24.28 |
+| RocksDB-1KB   |          20.03 |       74.63 |   115.54 |               66.00 |            85.10 |       27.03 |
 
 #+begin_src gnuplot :var inputs=read-amp :colnames no :file read-amp.png :exports results
   reset
@@ -104,11 +158,11 @@ Run time: 600 sec
   size = 0.8
   kk = 0.85
   y1 = 0.0
-  y2 = 140.0
+  y2 = 290.0
   y3 = 800.0
-  y4 = 900.0
+  y4 = 1300.0
 
-  set term pngcairo size 1600,1200 linewidth 3 font "Menlo,20"
+  set term pngcairo size 2000,1500 linewidth 3 font "Menlo,20"
 
   set xlabel "Run time(percentage)"
   set ylabel "Amplification factor" offset screen 0,0.1
@@ -121,27 +175,30 @@ Run time: 600 sec
   unset title
   set xtics nomirror
   set yrange [y1:y2]
-  set key at 98,134
+  set key at 98,270
   set key columns 2
   set border 1+2+8 # no top
   set lmargin at screen lm
   set rmargin at screen rm
   set bmargin at screen bm
   set tmargin at screen bm + size*kk
-  plot for [i=3:11] inputs using 1:i ps 2 
+  plot for [i=3:6] inputs using 1:i:(i-3+23) lc variable pointtype 4 ps 2, \
+       for [i=8:11] inputs using 1:i:(i-8+23) lc variable pointtype 7 ps 2
+
 
   unset xtics
   unset xlabel
   unset ylabel
-  set key at 98,900
-  set key columns 1
+  set key at 98,1130
+  set key rows 1
   set title "Read Amplification"
   set border 2+4+8 # no bottom
   set bmargin at screen bm + size*kk + gap
   set tmargin at screen bm + size + gap
   set yrange [y3:y4] # 800-900
-  set ytics 50
-  plot inputs using 1:2 lc 30 ps 2
+  set ytics 200
+  plot inputs using 1:2 lc 30 pointtype 4 ps 2,\
+       inputs using 1:7 lc 30 pointtype 7 ps 2
 
   unset multiplot
 #+end_src
@@ -149,21 +206,21 @@ Run time: 600 sec
 #+RESULTS:
 [[file:read-amp.png]]
 
-** SCAN (scan length:uniform(1, 100))
+** SCAN (scan length~uniform(1, 100))
 
 #+NAME: scan-amp
 | Run time | WT-32B | WT-128B | WT-256B | WT-512B | WT-1KB | RocksDB-32B | RocksDB-128B | RocksDB-256B | RocksDB-512B | RocksDB-1KB |
 |----------+--------+---------+---------+---------+--------+-------------+--------------+--------------+--------------+-------------|
-|      10% |   16.5 |     2.6 |     1.5 |     0.8 |    1.4 |         6.3 |          1.9 |          1.5 |          1.3 |         1.1 |
-|      20% |   16.7 |     2.6 |     1.5 |     0.7 |    1.4 |         6.3 |          1.9 |          1.5 |          1.3 |         1.1 |
-|      30% |   16.7 |     2.6 |     1.5 |     0.7 |    1.4 |         6.3 |          1.9 |          1.5 |          1.3 |         1.1 |
-|      40% |   16.5 |     2.6 |     1.5 |     0.7 |    1.4 |         6.3 |          1.9 |          1.5 |          1.3 |         1.1 |
-|      50% |   16.5 |     2.6 |     1.5 |     0.7 |    1.4 |         6.3 |          1.9 |          1.5 |          1.3 |         1.1 |
-|      60% |   16.6 |     2.6 |     1.5 |     0.7 |    1.4 |         6.3 |          1.9 |          1.5 |          1.3 |         1.1 |
-|      70% |   16.6 |     2.7 |     1.5 |     0.7 |    1.4 |         6.3 |          1.9 |          1.5 |          1.3 |         1.1 |
-|      80% |   16.6 |     2.6 |     1.5 |     0.7 |    1.4 |         6.3 |          1.9 |          1.5 |          1.3 |         1.1 |
-|      90% |   16.6 |     2.6 |     1.5 |     0.7 |    1.4 |         6.3 |          1.9 |          1.5 |          1.3 |         1.1 |
-|     100% |   16.6 |     2.6 |     1.5 |     0.7 |    1.4 |         6.3 |          1.9 |          1.5 |          1.3 |         1.1 |
+|      10% |   16.5 |     2.6 |     1.5 |     0.8 |    1.4 |       769.4 |        186.6 |         77.4 |         42.4 |        13.2 |
+|      20% |   16.7 |     2.6 |     1.5 |     0.7 |    1.4 |       770.0 |        186.5 |         77.4 |         42.5 |        13.1 |
+|      30% |   16.7 |     2.6 |     1.5 |     0.7 |    1.4 |       769.5 |        186.5 |         77.6 |         42.5 |        13.2 |
+|      40% |   16.5 |     2.6 |     1.5 |     0.7 |    1.4 |       769.6 |        186.6 |         77.4 |         42.3 |        13.2 |
+|      50% |   16.5 |     2.6 |     1.5 |     0.7 |    1.4 |       769.7 |        186.6 |         77.3 |         42.6 |        13.2 |
+|      60% |   16.6 |     2.6 |     1.5 |     0.7 |    1.4 |       770.0 |        186.9 |         77.4 |         42.7 |        13.3 |
+|      70% |   16.6 |     2.7 |     1.5 |     0.7 |    1.4 |       769.6 |        190.0 |         77.4 |         42.4 |        13.1 |
+|      80% |   16.6 |     2.6 |     1.5 |     0.7 |    1.4 |       769.3 |        186.3 |         77.4 |         42.4 |        13.1 |
+|      90% |   16.6 |     2.6 |     1.5 |     0.7 |    1.4 |       769.9 |        186.2 |         77.5 |         42.2 |        13.2 |
+|     100% |   16.6 |     2.6 |     1.5 |     0.7 |    1.4 |       769.4 |        186.5 |         77.3 |         42.4 |        13.1 |
 
 #+begin_src gnuplot :var inputs=scan-amp :colnames no :file scan-amp.png :exports results
   reset
@@ -173,13 +230,13 @@ Run time: 600 sec
   rm = 0.95
   gap = 0.03
   size = 0.8
-  kk = 0.85
+  kk = 0.3
   y1 = 0.5
-  y2 = 3.5
-  y3 = 16.0
-  y4 = 18.0
+  y2 = 4.0
+  y3 = 8.0
+  y4 = 1024.0
 
-  set term pngcairo size 1600,1200 linewidth 3 font "Menlo,20"
+  set term pngcairo size 2000,1500 linewidth 3 font "Menlo,20"
 
   set xlabel "Run time(percentage)"
   set ylabel "Amplification factor" offset screen 0,0.1
@@ -192,27 +249,29 @@ Run time: 600 sec
   unset title
   set xtics nomirror
   set yrange [y1:y2]
-  set key at 99,3.5
-  set key columns 2
+  set key at 99,4.0
+  set key horizontal
   set border 1+2+8 # no top
   set lmargin at screen lm
   set rmargin at screen rm
   set bmargin at screen bm
   set tmargin at screen bm + size*kk
-  plot for [i=3:11] inputs using 1:i ps 2
+  plot for [i=3:6] inputs using 1:i:(i-2+23) lc variable pointtype 4 ps 2
 
   unset xtics
   unset xlabel
   unset ylabel
-  set key at 99,17.9
-  set key columns 1
+  set key at 99,600
+  set key horizontal
   set title "Read Amplification(SCAN)"
   set border 2+4+8 # no bottom
   set bmargin at screen bm + size*kk + gap
   set tmargin at screen bm + size + gap
   set yrange [y3:y4] # 16-18
-  set ytics 1
-  plot inputs using 1:2 lc 30 ps 2
+  # set ytics
+  set logscale y 2
+  plot for [i=7:11] inputs using 1:i:(i-7+23) lc variable pointtype 7 ps 2, \
+       inputs using 1:2 lc 23 pointtype 4 ps 2
 
   unset multiplot
 #+end_src

@@ -1,4 +1,5 @@
 #+OPTIONS: html-style:nil
+#+HTML_MATHJAX: path:"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js?config=TeX-AMS_HTML"
 #+INFOJS_OPT: view:info path:latexcss/org-info.js
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="latexcss/latexcss.css" />
 #+HTML_HEAD_EXTRA: <link rel="alternate stylesheet" type="https://orgmode.org/resources/style/org-demo.min.css" />
