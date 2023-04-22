@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2023-04-22 Sat 20:14 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>在LevelDB上实现KV分离</title>
+<meta name="author" content="于承业" />
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" type="text/css" href="latexcss/latexcss.css" />
+<link rel="stylesheet" type="text/css" href="../latexcss/latexcss.css" />
+<link rel="alternate stylesheet" type="https://orgmode.org/resources/style/org-demo.min.css" />
+<link rel="alternate stylesheet" type="../latexcss/latexcss.css" />
+<script src="latexcss/org-info.js">
+// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
+// @license-end
+</script>
+
+<script>
+// @license magnet:?xt=urn:btih:1f739d935676111cfff4b4693e3816e664797050&amp;dn=gpl-3.0.txt GPL-v3-or-Later
+org_html_manager.set("TOC_DEPTH", "3");
+org_html_manager.set("LINK_HOME", "");
+org_html_manager.set("LINK_UP", "");
+org_html_manager.set("LOCAL_TOC", "1");
+org_html_manager.set("VIEW_BUTTONS", "0");
+org_html_manager.set("MOUSE_HINT", "underline");
+org_html_manager.set("FIXED_TOC", "0");
+org_html_manager.set("TOC", "1");
+org_html_manager.set("VIEW", "info");
+org_html_manager.setup();  // activate after the parameters are set
+// @license-end
+</script>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">在LevelDB上实现KV分离</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#orgbb2770a">1. 简介</a></li>
+<li><a href="#org1c089b9">2. 实现细节</a>
+<ul>
+<li><a href="#org365fa59">2.1. BlobDB write</a></li>
+<li><a href="#orgb690de8">2.2. BlobDB read</a></li>
+<li><a href="#org49b7994">2.3. ValueLog file</a></li>
+<li><a href="#org097f8d1">2.4. ValueLog recovery</a>
+<ul>
+<li><a href="#org9f4a47d">2.4.1. Validate and reuse latest writable vlog</a></li>
+</ul>
+</li>
+<li><a href="#org2c64f85">2.5. Garbage collection</a>
+<ul>
+<li><a href="#orgc78c058">2.5.1. Collect</a></li>
+<li><a href="#org5049b42">2.5.2. Rewrite</a></li>
+</ul>
+</li>
+<li><a href="#orga85de26">2.6. Writer group</a></li>
+</ul>
+</li>
+<li><a href="#org6ca9c19">3. 性能测试</a></li>
+</ul>
+</div>
+</div>
+<p>
+<a href="./index.html">Back to index</a>
+</p>
+
+<div id="outline-container-orgbb2770a" class="outline-2">
+<h2 id="orgbb2770a"><span class="section-number-2">1.</span> 简介</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+实现基于LevelDB 1.23，修改和新增约6000行代码，其中包含1000行测试代码。
+</p>
+
+<p>
+仓库地址：<a href="https://github.com/kabu1204/wisckey">https://github.com/kabu1204/wisckey</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-org1c089b9" class="outline-2">
+<h2 id="org1c089b9"><span class="section-number-2">2.</span> 实现细节</h2>
+<div class="outline-text-2" id="text-2">
+<ol class="org-ol">
+<li>BlobDB write</li>
+<li>BlobDB read</li>
+<li>ValueLog file</li>
+<li>ValueLog recovery</li>
+<li>Garbage collection</li>
+<li>Writer group</li>
+</ol>
+</div>
+
+<div id="outline-container-org365fa59" class="outline-3">
+<h3 id="org365fa59"><span class="section-number-3">2.1.</span> BlobDB write</h3>
+<div class="outline-text-3" id="text-2-1">
+
+<div id="org1b414cc" class="figure">
+<p><img src="./assets/wisckey-overview.jpg" alt="wisckey-overview.jpg" />
+</p>
+</div>
+
+<p>
+接口：
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #228b22;">Status</span> <span style="color: #00006DE06DE0;">BlobDB</span>::<span style="color: #ff0000;">Write</span>(<span style="color: #0000cd;">const</span> <span style="color: #228b22;">WriteOptions</span>&amp; <span style="color: #a0522d;">options</span>, <span style="color: #228b22;">WriteBatch</span>* <span style="color: #a0522d;">updates</span>,
+                     <span style="color: #228b22;">WriteCallback</span>* <span style="color: #a0522d;">callback</span>);
+</pre>
+</div>
+
+<p>
+以下，我们用 <b>vptr</b> 指代value pointer（ <code>ValueHandle</code> ）。
+</p>
+
+<ol class="org-ol">
+<li>根据record的value size，将 <code>WriteBatch* updates</code> 划分为 <code>WriteBatch small</code> 和 <code>ValueBatch large</code></li>
+<li>将 <code>large</code> 写入ValueLog并获得相应的vptr</li>
+<li>将2中获得的 <code>&lt;key, vptr&gt;</code> s合并到 <code>small</code> 中。</li>
+<li>将 <code>small</code> 写入LSMTree</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-orgb690de8" class="outline-3">
+<h3 id="orgb690de8"><span class="section-number-3">2.2.</span> BlobDB read</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+接口：
+</p>
+<div class="org-src-container">
+<pre class="src src-cpp"><span style="color: #228b22;">Status</span> <span style="color: #00006DE06DE0;">BlobDB</span>::<span style="color: #ff0000;">Get</span>(<span style="color: #0000cd;">const</span> <span style="color: #228b22;">ReadOptions</span>&amp; <span style="color: #a0522d;">options</span>, <span style="color: #0000cd;">const</span> <span style="color: #228b22;">Slice</span>&amp; <span style="color: #a0522d;">key</span>,
+                   <span style="color: #00006DE06DE0;">std</span>::<span style="color: #228b22;">string</span>* <span style="color: #a0522d;">value</span>);
+</pre>
+</div>
+
+<ol class="org-ol">
+<li>根据 <code>key</code> 查询LSMTree</li>
+<li>如果1查到的是一个值（ <code>kTypeValue</code> ），将 <code>value</code> 设置为它，返回。</li>
+<li>如果1查到的是一个vptr（ <code>kTypeValueHandle</code> ），用它查询ValueLog</li>
+<li>如果我们在3中读出了值，将 <code>value</code> 设置为它，返回。</li>
+<li>如果我们在3中得到了 <code>kNotFound</code> 的错误，取得LSMTree当前的snapshot，并从1重试。</li>
+</ol>
+
+
+<p>
+在此过程中，我们不加任何锁（除了LSMTree和ValueLog内部的锁）。可以证明，我们总是得到一致且正确的结果。在大多数情况下，我们将在2和4取得值并返回。进入步骤5并重试的情况很稀少，而且能保证重试最多一次。
+</p>
+
+<p>
+正确性的简单分析和证明：
+</p>
+<ol class="org-ol">
+<li>如果我们在第2步返回，安全。因为LSMTree内部是线程安全的。</li>
+<li>如果我们在第2步取得的是vptr，
+<ul class="org-ul">
+<li>若GC是关闭的，BlobDB保证我们一定可以从ValueLog中读出正确的值。因为，即使别的线程在第2步和第3步之间调用Write更新了key对用的value，ValueLog是不会删除vptr所指向位置的旧值的。</li>
+
+<li>若GC是开启的，vptr指向的旧文件有可能被删除（ <code>options.snapshot =</code> NULL= 时）。在这种情况下，步骤4将返回 <code>kNotFound</code> 错误。此时，我们在5中取得当前的snapshot并从1重试。ValueLog保证，旧文件不会被从磁盘上删除，直到旧文件中的所有record的sequence number比最旧的snapshot还要旧。（详细解释可以看Garbage collection部分）</li>
+</ul></li>
+</ol>
+</div>
+</div>
+
+
+<div id="outline-container-org49b7994" class="outline-3">
+<h3 id="org49b7994"><span class="section-number-3">2.3.</span> ValueLog file</h3>
+<div class="outline-text-3" id="text-2-3">
+<p>
+.vlog file:
+</p>
+<pre class="example">
+ ----------
+| record 0 |
+ ----------
+| record 1 |
+ ----------
+| record 2 |
+ ----------
+| record 3 |
+ ----------
+| record 4 |
+ ----------
+| record 5 |
+ ----------
+|    .     |
+|   ...    |
+|  .....   |
+ ----------
+| record N |
+ ----------
+</pre>
+
+<p>
+record:
+</p>
+<pre class="example">
+----------------------------------------------
+| KeySize | ValueSize | key |      value     |
+----------------------------------------------
+
+KeySize:    VarInt32
+ValueSize:  VarInt32
+key:        uint8[KeySize]
+value:      uint8[ValueSize]
+</pre>
+
+<p>
+在任何时间，ValueLog只有一个writable vlog和多个read-only vlog。
+</p>
+
+<p>
+ValueLog将新record追加到writable vlog末尾。当writable vlog的大小超过限制，它将转变为read-only vlog。并且ValueLog会创建一个新的writable vlog。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org097f8d1" class="outline-3">
+<h3 id="org097f8d1"><span class="section-number-3">2.4.</span> ValueLog recovery</h3>
+<div class="outline-text-3" id="text-2-4">
+<p>
+我们把ValueLog的持久化状态叫做persistent state。
+</p>
+
+<p>
+ValueLog的persistent state用如下四个量描述：
+</p>
+<ol class="org-ol">
+<li>read-only .vlog files</li>
+<li>the latest writable .vlog file</li>
+<li>obsolete .vlog files</li>
+<li>next file number (每个.vlog和manifest文件都会被赋予唯一的file number)</li>
+</ol>
+
+
+<p>
+和LevelDB使用增量的形式记录版本变化类似，ValueLog也使用增量的形式记录persistent state的变化，对应的类为 <code>BlobVersionEdit</code> ：
+</p>
+<ol class="org-ol">
+<li>newly added read-only .vlog files</li>
+<li>new writable .vlog file</li>
+<li>newly obsolete .vlog files</li>
+<li>next file number</li>
+</ol>
+
+
+<ul class="org-ul">
+<li>每次ValueLog写满当前writable vlog并准备创建新的时，它会先创建一个 <code>BlobVerdsionEdit</code> ，并在其中记录：（1）当前writable vlog要加入到read-only vlogs中，（2）要创建新的writable vlog，（3）next file number</li>
+
+<li>每次ValueLog结束GC时，它会创建一个 =BlobVersionEdit=， 并记录：（1）将新文件加入到read-only vlogs中，（2）将旧文件加入到obsolete files中，（3）next file number</li>
+</ul>
+
+<p>
+<code>BlobVersionEdit</code> 会被先写入当前manifest file中，然后再应用所记录的变更。
+</p>
+
+<p>
+将旧vlog加入到obsolete files并不会立刻从磁盘上删除它，详见Garbage collection部分。
+</p>
+
+<p>
+在BlobDB启动时， <code>ValueLogImpl::Recover</code> 会读取manifest文件，不断应用这些变更，最终得到一个一致的persistent state。
+</p>
+</div>
+
+<div id="outline-container-org9f4a47d" class="outline-4">
+<h4 id="org9f4a47d"><span class="section-number-4">2.4.1.</span> Validate and reuse latest writable vlog</h4>
+<div class="outline-text-4" id="text-2-4-1">
+<p>
+在recovery后，ValueLog会验证最新的writable vlog，并将它truncate到正确的大小。如果truncate后的大小较小，ValueLog会尝试先复用它，而不是创建新的。
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org2c64f85" class="outline-3">
+<h3 id="org2c64f85"><span class="section-number-3">2.5.</span> Garbage collection</h3>
+<div class="outline-text-3" id="text-2-5">
+<p>
+每隔 <code>blob_gc_interval</code> 秒，GC线程会选取一个read-only vlog进行垃圾回收。
+</p>
+
+<p>
+GC可以分为两个阶段：collect和rewrite
+</p>
+</div>
+
+<div id="outline-container-orgc78c058" class="outline-4">
+<h4 id="orgc78c058"><span class="section-number-4">2.5.1.</span> Collect</h4>
+<div class="outline-text-4" id="text-2-5-1">
+<p>
+在Collect阶段，GC线程会遍历所选取文件的所有records。
+</p>
+
+<p>
+对每一个record，GC线程会查询LSMTree，以此判断该record是否需要丢弃：
+</p>
+<ol class="org-ol">
+<li>LSMTree返回NotFound错误</li>
+<li>LSMTree返回的是值而不是vptr</li>
+<li>LSMTree返回了vptr，但vptr不指向当前record</li>
+</ol>
+
+<p>
+有效的（不需要丢弃）的record会被加入到buffer中。
+</p>
+</div>
+</div>
+
+<div id="outline-container-org5049b42" class="outline-4">
+<h4 id="org5049b42"><span class="section-number-4">2.5.2.</span> Rewrite</h4>
+<div class="outline-text-4" id="text-2-5-2">
+<p>
+如果被丢弃records的大小或数量的比例超过阈值，GC线程会将有效records写入新文件并丢弃旧文件。
+</p>
+
+<p>
+rewrite流程：
+</p>
+<ol class="org-ol">
+<li>创建一个新vlog，将有效records写入。</li>
+<li>将新的vptr写入LSMTree</li>
+<li>记录BlobVerdionEdit</li>
+</ol>
+
+
+<p>
+有两点需要注意：
+</p>
+<ol class="org-ol">
+<li>用户可能在collect和rewrite之间更新并覆盖一些记录</li>
+<li>由于snapshot的存在，用户依然需要从旧文件中读取record</li>
+</ol>
+
+
+<p>
+对于第一个问题：我们需要在将vptr最终写入LSMTree的WAL和MemTable前检查对应的key是否被覆盖。为了实现这个，我修改了LSMTree的写入以支持WriteCallback和WriterGroup（和RocksDB类似）。
+</p>
+
+<p>
+对于第二个问题：用户可能持有旧的snapshot，从而读到旧的vptr。为了解决这个问题，我们在rewrite完成后只是将旧文件标记为废弃，而不删除。稍后，当 <code>smallest_snapshot</code> ，也就是最旧的snapshot的sequence number比旧文件中最新记录的sequence number还大时，我们就可以安全地从磁盘上删除旧文件。
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-orga85de26" class="outline-3">
+<h3 id="orga85de26"><span class="section-number-3">2.6.</span> Writer group</h3>
+<div class="outline-text-3" id="text-2-6">
+<p>
+之前写过文章，见：<a href="./leveldb_writergroup.html">给LevelDB添加WriteCallback</a>
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-org6ca9c19" class="outline-2">
+<h2 id="org6ca9c19"><span class="section-number-2">3.</span> 性能测试</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+见<a href="https://github.com/kabu1204/wisckey/blob/main/doc/blobdb_benchmarks.md">https://github.com/kabu1204/wisckey/blob/main/doc/blobdb_benchmarks.md</a>
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: 于承业</p>
+<p class="date">Created: 2023-04-22 Sat 20:14</p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

@@ -21,5 +21,7 @@ I'm short of knowledge but still insisting on learning.
 8. [[./lscq.html][一次提给Bytedance/gopkg:lscq的PR（增加arm64支持）的合并历程]]
 9. [[./asm_problems.html][Be careful when writing assembly]]
 10. [[./wt10661.html][给WiredTiger(MongoDB)提了个build bugfix]]
+11. [[./leveldb_writergroup.html][给Leveldb添加WriteCallback]]
+12. [[./wisckey.html][在LevelDB上实现KV分离]]
 ** Schedules
 My Schedules:[[./agenda.html][agenda]]
